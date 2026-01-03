@@ -15,8 +15,9 @@ __ClientsVendes__ és una aplicació de gestió lleugera i eficient dissenyada p
 🚀 Característiques Principals
 ----------------------------
 
-- __Gestió de Clients (CRUD):__ Creació, visualització i eliminació de clients de forma centralitzada.
-- __Control de Vendes i Despeses:__ Registre detallat de transaccions associades a cada client.
+- __Gestió de Clients (CRUD):__ Creació, visualització i eliminació de clients de forma centralitzada. Guardar telèfon, correu, direcció i bloc de notes per a cada 
+client de manera persistent.
+- __Control de Vendes i Despeses:__ Registre detallat de transaccions associades a cada client: Producte o servei + preu de venda.
 - __Despeses Habituals:__ Sistema per crear, guardar i suprimir despeses recurrents per agilitzar el flux de treball.
 - __Exportació de Dades:__ Funcionalitat per exportar tota la informació a format Excel i realitzar còpies de seguretat de la base de dades.
 - __Interfície Neta:__ Disseny minimalista i funcional pensat per a l'usuari final.
