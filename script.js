@@ -142,7 +142,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     searchInput.addEventListener('input', filterClients);
     snippetSearch.addEventListener('input', filterSnippets);
     addExpenseBtn.addEventListener('click', addExpense);
-    backToList.addEventListener('click', showClientList);
+    backToList.addEventListener('click', async () => {
+        await saveNotepad();
+        showClientList();
+    });
     exportBtn.addEventListener('click', exportAllToExcel);
     exportClientBtn.addEventListener('click', exportClientToExcel);
     exportDbBtn.addEventListener('click', exportDatabase);
@@ -156,6 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Notepad event listeners
     notepadTextarea.addEventListener('input', saveNotepad);
+    notepadTextarea.addEventListener('blur', saveNotepad);
     expandNotepadBtn.addEventListener('click', toggleNotepadSize);
 
     // Close modals by clicking outside
@@ -212,7 +216,10 @@ function renderClientList() {
     });
 }
 
-function showClientList() {
+async function showClientList() {
+    if (currentClientId) {
+        await saveNotepad();
+    }
     document.getElementById('clientListSection').classList.remove('hidden');
     newClientSection.classList.add('hidden');
     clientDetailsSection.classList.add('hidden');
@@ -220,7 +227,10 @@ function showClientList() {
     currentClientId = null;
 }
 
-function showVendes() {
+async function showVendes() {
+    if (currentClientId) {
+        await saveNotepad();
+    }
     document.getElementById('clientListSection').classList.add('hidden');
     newClientSection.classList.add('hidden');
     clientDetailsSection.classList.add('hidden');
@@ -228,7 +238,10 @@ function showVendes() {
     renderVendes();
 }
 
-function showNewClientForm() {
+async function showNewClientForm() {
+    if (currentClientId) {
+        await saveNotepad();
+    }
     document.getElementById('clientListSection').classList.add('hidden');
     newClientSection.classList.remove('hidden');
     clientDetailsSection.classList.add('hidden');
@@ -276,6 +289,7 @@ function showClientDetails(clientId) {
     clientPhone.textContent = client.phone;
     clientEmail.textContent = client.email;
     clientAddress.textContent = client.address;
+    notepadTextarea.value = client.notepad || '';
 
     renderExpenses(client.expenses);
 
@@ -677,12 +691,18 @@ async function saveSnippets() {
 
 // Notepad functions
 async function saveNotepad() {
+    console.log('saveNotepad called');
     const client = clients.find(c => c.id === currentClientId);
-    if (!client) return;
+    if (!client) {
+        console.log('No client found for currentClientId:', currentClientId);
+        return;
+    }
 
     client.notepad = notepadTextarea.value;
+    console.log('Updated client notepad:', client.notepad);
     try {
         await saveClients();
+        console.log('Notepad saved successfully');
     } catch (error) {
         console.error('Error saving notepad:', error);
     }

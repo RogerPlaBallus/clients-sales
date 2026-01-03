@@ -128,11 +128,11 @@ app.post('/api/clients', (req, res) => {
         db.run('DELETE FROM clients');
 
         // Insert new data
-        const clientStmt = db.prepare('INSERT INTO clients (id, name, phone, email, address) VALUES (?, ?, ?, ?, ?)');
+        const clientStmt = db.prepare('INSERT INTO clients (id, name, phone, email, address, notepad) VALUES (?, ?, ?, ?, ?, ?)');
         const expenseStmt = db.prepare('INSERT INTO expenses (client_id, date, product, price) VALUES (?, ?, ?, ?)');
 
         clients.forEach(client => {
-            clientStmt.run(client.id, client.name, client.phone, client.email, client.address);
+            clientStmt.run(client.id, client.name, client.phone, client.email, client.address, client.notepad || '');
             client.expenses.forEach(expense => {
                 expenseStmt.run(client.id, expense.date, expense.product, expense.price);
             });
