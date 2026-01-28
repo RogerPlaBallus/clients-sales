@@ -57,9 +57,15 @@
                 <label for="expenseDate">Data:</label>
                 <input type="date" id="expenseDate" required>
                 <label for="expenseProduct">Producte o Servei:</label>
-                <input type="text" id="expenseProduct" required>
+                <div class="input-error-wrapper">
+                    <input type="text" id="expenseProduct" required>
+                    <span class="error-message" id="expenseProductError">Omple aquest camp per afegir venda</span>
+                </div>
                 <label for="expensePrice">Preu (€):</label>
-                <input type="number" step="0.01" id="expensePrice" required>
+                <div class="input-error-wrapper">
+                    <input type="number" step="0.01" id="expensePrice" required>
+                    <span class="error-message" id="expensePriceError">Omple aquest camp per afegir venda</span>
+                </div>
                 <button type="button" id="addExpenseBtn">Afegir venda</button>
                 <button type="button" id="manageSnippetsBtn" title="Selecciona producte o servei">Selecciona producte o servei 📝</button>
             </form>

@@ -107,6 +107,27 @@ input, select {
     margin-bottom: 10px;
 }
 
+input.error {
+    border: 2px solid #e74c3c;
+}
+
+.input-error-wrapper {
+    position: relative;
+}
+
+.error-message {
+    display: none;
+    color: #e74c3c;
+    font-size: 14px;
+    margin-top: -8px;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.error-message.show {
+    display: block;
+}
+
 button {
     background-color: #3498db;
     color: white;

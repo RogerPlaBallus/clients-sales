@@ -257,23 +257,26 @@ async function addClient(e) {
     const email = document.getElementById('email').value;
     const address = document.getElementById('address').value;
 
+    if (!name.trim()) {
+        alert('Please enter a client name');
+        return;
+    }
+
     const newClient = {
-        id: getNextClientId(),
-        name,
-        phone,
-        email,
-        address,
-        expenses: []
+        name: name.trim(),
+        phone: phone.trim(),
+        email: email.trim(),
+        address: address.trim(),
+        notepad: ''
     };
 
-    clients.push(newClient);
     try {
-        await saveClients();
-        renderClientList();
+        console.log('Saving new client:', newClient);
+        await saveSingleClient(newClient);
+        newClientForm.reset();
         showClientList();
     } catch (error) {
-        // Remove the client from local array if save failed
-        clients.pop();
+        console.error('Error saving client:', error);
         alert('Failed to save client. Please try again.');
     }
 }
@@ -291,7 +294,9 @@ function showClientDetails(clientId) {
     clientAddress.textContent = client.address;
     notepadTextarea.value = client.notepad || '';
 
-    renderExpenses(client.expenses);
+    // Use 'vendes' field from new API, fallback to 'expenses' for compatibility
+    const expenses = client.vendes || client.expenses || [];
+    renderExpenses(expenses);
 
     // Set the date field to the current date
     document.getElementById('expenseDate').value = getCurrentDate();
@@ -304,18 +309,23 @@ function showClientDetails(clientId) {
 
 function renderExpenses(expenses) {
     expenseList.innerHTML = '';
-    const validExpenses = expenses.filter(expense => expense.product !== null && expense.price !== null);
-    const sortedExpenses = validExpenses.map((expense, index) => ({ expense, originalIndex: index })).sort((a, b) => {
-        if (!a.expense.date) return 1;
-        if (!b.expense.date) return -1;
-        return b.expense.date.localeCompare(a.expense.date);
+    // Handle both 'expenses' (legacy) and 'vendes' (new) field names
+    const expensesArray = expenses || [];
+    const validExpenses = expensesArray.filter(expense => expense.product !== null && expense.price !== null);
+    const sortedExpenses = validExpenses.slice().sort((a, b) => {
+        if (!a.date) return 1;
+        if (!b.date) return -1;
+        return b.date.localeCompare(a.date);
     });
-    sortedExpenses.forEach(({ expense, originalIndex }) => {
+    sortedExpenses.forEach((expense) => {
         const li = document.createElement('li');
+        // Use expense.id if available (new API), otherwise fall back to index-based deletion
+        const deleteAction = expense.id 
+            ? `showDeleteModal(${expense.id})` 
+            : `showDeleteModal(${validExpenses.indexOf(expense)})`;
         li.innerHTML = `
             <span>${formatDate(expense.date)} - ${expense.product} - €${expense.price}</span>
-            <button onclick="showDeleteModal(${originalIndex})" class="delete-btn">Eliminar</button>
-        `;
+            <button onclick="${deleteAction}" class="delete-btn">Eliminar</button>`;
         expenseList.appendChild(li);
     });
 }
@@ -324,12 +334,14 @@ function renderVendes() {
     vendesList.innerHTML = '';
     const allExpenses = [];
     clients.forEach(client => {
-        client.expenses.forEach((expense, index) => {
+        // Use 'vendes' field from new API, fallback to 'expenses' for compatibility
+        const vendesData = client.vendes || client.expenses || [];
+        vendesData.forEach((expense) => {
             if (expense.product !== null && expense.price !== null) {
                 allExpenses.push({
+                    vendeId: expense.id, // Use venda ID from server
                     clientId: client.id,
                     clientName: client.name,
-                    expenseIndex: index,
                     date: expense.date,
                     product: expense.product,
                     price: expense.price
@@ -346,7 +358,7 @@ function renderVendes() {
         const li = document.createElement('li');
         li.innerHTML = `
             <span>${formatDate(item.date)} - ${item.clientName} - ${item.product} - €${item.price}</span>
-            <button onclick="showDeleteVendesModal(${item.clientId}, ${item.expenseIndex})" class="delete-btn small-delete-btn">Eliminar</button>
+            <button onclick="showDeleteVendesModal(${item.vendeId})" class="delete-btn small-delete-btn">Eliminar</button>
         `;
         vendesList.appendChild(li);
     });
@@ -354,28 +366,70 @@ function renderVendes() {
 
 async function addExpense() {
     const date = document.getElementById('expenseDate').value;
-    const product = document.getElementById('expenseProduct').value;
-    const price = parseFloat(document.getElementById('expensePrice').value);
+    const productInput = document.getElementById('expenseProduct');
+    const priceInput = document.getElementById('expensePrice');
+    const product = productInput.value;
+    const price = parseFloat(priceInput.value);
 
-    if (!date || !product || !price || isNaN(price)) {
-        alert('Si us plau, omple tots els camps correctament.');
+    // Clear previous error states
+    const productError = document.getElementById('expenseProductError');
+    const priceError = document.getElementById('expensePriceError');
+    productInput.classList.remove('error');
+    priceInput.classList.remove('error');
+    productError.classList.remove('show');
+    priceError.classList.remove('show');
+
+    // Validate fields
+    let isValid = true;
+    if (!product || product.trim() === '') {
+        productInput.classList.add('error');
+        productError.classList.add('show');
+        isValid = false;
+    }
+    if (!price || isNaN(price) || price <= 0) {
+        priceInput.classList.add('error');
+        priceError.classList.add('show');
+        isValid = false;
+    }
+
+    if (!isValid) {
         return;
     }
 
     const client = clients.find(c => c.id === currentClientId);
-    if (!client) return;
+    if (!client) {
+        alert('No client selected');
+        return;
+    }
 
-    const newExpense = { date, product, price };
-    client.expenses.push(newExpense);
     try {
-        await saveClients();
-        renderExpenses(client.expenses);
+        // Save to server using new API
+        const response = await fetch('http://localhost:3000/api/vendes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                client_id: currentClientId,
+                product: product.trim(),
+                price: price,
+                date: date
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+
+        // Reload clients to refresh the list
+        await loadClients();
+        const updatedClient = clients.find(c => c.id === currentClientId);
+        if (updatedClient) {
+            renderExpenses(updatedClient.vendes || []);
+        }
         addExpenseForm.reset();
         // Set the date field to the current date after reset
         document.getElementById('expenseDate').value = getCurrentDate();
     } catch (error) {
-        // Remove the expense from local array if save failed
-        client.expenses.pop();
+        console.error('Error saving expense:', error);
         alert('Error en guardar la venda. Torna-ho a provar.');
     }
 }
@@ -437,7 +491,8 @@ function performExport() {
 
     const data = [];
     clients.forEach(client => {
-        client.expenses.forEach(expense => {
+        const expenses = client.vendes || client.expenses || [];
+        expenses.forEach(expense => {
             if (expense.date >= startDate && expense.date <= endDate) {
                 data.push({
                     Data: expense.date,
@@ -523,14 +578,16 @@ function hideSnippetsModal() {
 function renderSnippets(filterTerm = '') {
     snippetsList.innerHTML = '';
     const filteredSnippets = snippets.filter(snippet =>
-        normalizeString(snippet.text).includes(normalizeString(filterTerm))
+        normalizeString(snippet.name || snippet.text).includes(normalizeString(filterTerm))
     );
-    filteredSnippets.forEach((snippet, index) => {
+    filteredSnippets.forEach((snippet) => {
         const li = document.createElement('li');
+        const displayName = snippet.name || snippet.text;
+        const displayPrice = snippet.price || 0;
         li.innerHTML = `
-            <span>${snippet.text} - €${snippet.price}</span>
-            <button onclick="selectSnippet('${snippet.text}', ${snippet.price})">Seleccionar</button>
-            <button onclick="showDeleteSnippetModal(${snippets.indexOf(snippet)}); event.stopPropagation();" class="delete-btn">🗑️</button>
+            <span>${displayName} - €${parseFloat(displayPrice).toFixed(2)}</span>
+            <button onclick="selectSnippet('${displayName.replace(/'/g, "\\'")}', ${displayPrice})">Seleccionar</button>
+            <button onclick="deleteSnippetFromServer(${snippet.id}); event.stopPropagation();" class="delete-btn">🗑️</button>
         `;
         snippetsList.appendChild(li);
     });
@@ -540,12 +597,34 @@ function saveSnippet() {
     const text = document.getElementById('snippetText').value;
     const price = parseFloat(document.getElementById('snippetPrice').value);
 
-    if (text && price) {
-        snippets.push({ text, price });
-        saveSnippets();
-        renderSnippets();
+    if (!text || !price) {
+        alert('Omple els camps de producte/servei i preu.');
+        return;
+    }
+
+    saveSnippetToServer(text, price);
+}
+
+async function saveSnippetToServer(name, price) {
+    try {
+        const response = await fetch('http://localhost:3000/api/productes-serveis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, price, descripcio: '' })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to save product/service');
+        }
+
+        // Clear inputs and reload snippets
         document.getElementById('snippetText').value = '';
         document.getElementById('snippetPrice').value = '';
+        await loadSnippets();
+    } catch (error) {
+        console.error('Error saving product/service:', error);
+        alert('Error en guardar: ' + error.message);
     }
 }
 
@@ -554,14 +633,14 @@ function selectSnippet(text, price) {
     document.getElementById('expensePrice').value = price;
     hideSnippetsModal();
 }
-
 let expenseToDelete = null;
 let clientToDelete = null;
-let snippetToDelete = null;
+let vendesToDelete = null;
 
-function showDeleteModal(index) {
-    expenseToDelete = index;
+function showDeleteModal(vendeId) {
+    expenseToDelete = vendeId;
     clientToDelete = null;
+    vendesToDelete = null;
     deleteModal.style.display = 'flex';
 }
 
@@ -572,18 +651,15 @@ function showDeleteClientModal(clientId) {
 }
 
 function showDeleteSnippetModal(index) {
-    snippetToDelete = index;
-    expenseToDelete = null;
-    clientToDelete = null;
-    vendesToDelete = null;
-    deleteModal.style.display = 'flex';
+    // This function is deprecated - use deleteSnippetFromServer() directly
+    // Kept for backward compatibility but not used
+    console.log('Deprecated: use deleteSnippetFromServer() instead');
 }
 
-function showDeleteVendesModal(clientId, expenseIndex) {
-    vendesToDelete = { clientId, expenseIndex };
+function showDeleteVendesModal(vendeId) {
+    vendesToDelete = { vendeId };
     expenseToDelete = null;
     clientToDelete = null;
-    snippetToDelete = null;
     deleteModal.style.display = 'flex';
 }
 
@@ -591,47 +667,70 @@ function hideDeleteModal() {
     deleteModal.style.display = 'none';
     expenseToDelete = null;
     clientToDelete = null;
-    snippetToDelete = null;
     vendesToDelete = null;
 }
 
 async function deleteExpense() {
     if (expenseToDelete !== null) {
-        const client = clients.find(c => c.id === currentClientId);
-        if (client) {
-            const deletedExpense = client.expenses.splice(expenseToDelete, 1)[0];
-            try {
-                await saveClients();
-                renderExpenses(client.expenses);
-            } catch (error) {
-                // Restore the expense from local array if save failed
-                client.expenses.splice(expenseToDelete, 0, deletedExpense);
-                alert('Failed to delete expense. Please try again.');
+        try {
+            // Delete venda from backend via /api/vendes/:id DELETE
+            const response = await fetch(`http://localhost:3000/api/vendes/${expenseToDelete}`, {
+                method: 'DELETE'
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to delete venda');
             }
+            
+            // Reload clients to sync UI with server state
+            await loadClients();
+            
+            // Refresh current client's expenses display
+            const client = clients.find(c => c.id === currentClientId);
+            if (client) {
+                renderExpenses(client.vendes || client.expenses || []);
+            }
+        } catch (error) {
+            console.error('Error deleting venda:', error);
+            alert('Failed to delete venda. Please try again.');
         }
     } else if (clientToDelete !== null) {
-        const deletedClient = clients.find(c => c.id === clientToDelete);
-        clients = clients.filter(c => c.id !== clientToDelete);
         try {
-            await saveClients();
+            // Delete client from backend via /api/clients/:id DELETE
+            const response = await fetch(`http://localhost:3000/api/clients/${clientToDelete}`, {
+                method: 'DELETE'
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to delete client');
+            }
+            
+            // Reload clients to sync UI with server state
+            await loadClients();
             renderClientList();
+            clientDetailsSection.classList.add('hidden');
+            document.getElementById('clientListSection').classList.remove('hidden');
         } catch (error) {
-            // Restore the client if save failed
-            clients.push(deletedClient);
+            console.error('Error deleting client:', error);
             alert('Failed to delete client. Please try again.');
         }
     } else if (vendesToDelete !== null) {
-        const client = clients.find(c => c.id === vendesToDelete.clientId);
-        if (client) {
-            const deletedExpense = client.expenses.splice(vendesToDelete.expenseIndex, 1)[0];
-            try {
-                await saveClients();
-                renderVendes();
-            } catch (error) {
-                // Restore the expense if save failed
-                client.expenses.splice(vendesToDelete.expenseIndex, 0, deletedExpense);
-                alert('Failed to delete expense. Please try again.');
+        try {
+            // Delete venda from backend via /api/vendes/:id DELETE
+            const response = await fetch(`http://localhost:3000/api/vendes/${vendesToDelete.vendeId}`, {
+                method: 'DELETE'
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to delete venda');
             }
+            
+            // Reload clients to sync UI with server state
+            await loadClients();
+            renderVendes();
+        } catch (error) {
+            console.error('Error deleting venda:', error);
+            alert('Failed to delete venda. Please try again.');
         }
     }
     hideDeleteModal();
@@ -641,52 +740,97 @@ async function deleteExpense() {
 async function loadClients() {
     try {
         const response = await fetch('http://localhost:3000/api/clients');
+        if (!response.ok) {
+            throw new Error('Failed to load clients');
+        }
         clients = await response.json();
         renderClientList();
     } catch (error) {
         console.error('Error loading clients:', error);
+        alert('Error loading clients. Please check the server.');
     }
 }
 
 async function saveClients() {
     try {
-        const response = await fetch('http://localhost:3000/api/clients', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(clients)
-        });
-        if (!response.ok) {
-            throw new Error('Failed to save clients');
-        }
-        // Reload clients to ensure UI reflects server state
+        // Note: This function is kept for backward compatibility
+        // Individual clients are now saved via saveSingleClient()
+        console.log('saveClients() called - reloading from server');
         await loadClients();
     } catch (error) {
-        console.error('Error saving clients:', error);
-        alert('Error saving clients. Please try again.');
-        throw error; // Re-throw to handle in caller
+        console.error('Error in saveClients:', error);
+        throw error;
     }
 }
 
+async function saveSingleClient(client) {
+    try {
+        const response = await fetch('http://localhost:3000/api/clients', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: client.name,
+                phone: client.phone,
+                email: client.email,
+                address: client.address,
+                notepad: client.notepad || ''
+            })
+        });
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+        const result = await response.json();
+        // Reload clients to ensure UI reflects server state
+        await loadClients();
+        return result;
+    } catch (error) {
+        console.error('Error saving client:', error);
+        throw error;
+    }
+}
+
+// Snippets/Products API functions
 async function loadSnippets() {
     try {
-        const response = await fetch('http://localhost:3000/api/snippets');
+        const response = await fetch('http://localhost:3000/api/productes-serveis');
+        if (!response.ok) {
+            throw new Error('Failed to load products/services');
+        }
         snippets = await response.json();
         renderSnippets();
     } catch (error) {
-        console.error('Error loading snippets:', error);
+        console.error('Error loading products/services:', error);
+        snippets = [];
+        renderSnippets();
+    }
+}
+
+async function deleteSnippetFromServer(snippetId) {
+    if (!confirm('Estàs segur que vols eliminar aquest producte/servei?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:3000/api/productes-serveis/${snippetId}`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to delete product/service');
+        }
+
+        // Reload snippets to reflect deletion
+        await loadSnippets();
+    } catch (error) {
+        console.error('Error deleting product/service:', error);
+        alert('Error en eliminar: ' + error.message);
     }
 }
 
 async function saveSnippets() {
-    try {
-        await fetch('http://localhost:3000/api/snippets', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(snippets)
-        });
-    } catch (error) {
-        console.error('Error saving snippets:', error);
-    }
+    // This function is kept for backward compatibility
+    // Individual snippets are now saved via saveSnippetToServer()
+    console.log('saveSnippets() called - snippets are now saved to server automatically');
 }
 
 // Notepad functions
@@ -701,7 +845,22 @@ async function saveNotepad() {
     client.notepad = notepadTextarea.value;
     console.log('Updated client notepad:', client.notepad);
     try {
-        await saveClients();
+        const response = await fetch(`http://localhost:3000/api/clients/${currentClientId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: client.name,
+                phone: client.phone,
+                email: client.email,
+                address: client.address,
+                notepad: client.notepad
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+
         console.log('Notepad saved successfully');
     } catch (error) {
         console.error('Error saving notepad:', error);
