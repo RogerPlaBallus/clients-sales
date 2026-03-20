@@ -1,119 +1,127 @@
 <!DOCTYPE html>
-<html lang="ca">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Clients</title>
+    <title>Client Manager</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
-        <h1>GESTOR DE CLIENTS</h1>
+        <div class="language-selector">
+            <select id="languageSelect" onchange="setLanguage(this.value)">
+                <option value="en">English</option>
+                <option value="ca">Català</option>
+                <option value="es">Español</option>
+            </select>
+        </div>
+        <h1 data-i18n="headerTitle">CLIENT MANAGER</h1>
         <div class="header-buttons">
-            <button id="iniciBtn" title="Visualitza tots els clients">Clients</button>
-            <button id="vendesBtn" title="Visualitza totes les vendes">Vendes</button>
-            <button id="newClientBtn" title="Crea un nou client">Nou Client</button>
-            <button id="exportBtn" title="Exporta Clients + Vendes a Excel">Exportar TOT a Excel</button>
-            <button id="exportDbBtn" title="Baixa ara una còpia de Clients.db .Un cop al mes es guardarà automàticament una còpia de la bbdd a la carpeta Base de Dades mensual">Exportar Base de dades</button>
+            <button id="iniciBtn" data-i18n="btnClients" data-i18n-title="tooltipClients" title="View all clients">Clients</button>
+            <button id="vendesBtn" data-i18n="btnSales" data-i18n-title="tooltipSales" title="View all sales">Sales</button>
+            <button id="newClientBtn" data-i18n="btnNewClient" data-i18n-title="tooltipNewClient" title="Create a new client">New Client</button>
+            <button id="exportBtn" data-i18n="btnExportAll" data-i18n-title="tooltipExportAll" title="Export Clients + Sales to Excel">Export ALL to Excel</button>
+            <button id="exportDbBtn" data-i18n="btnExportDb" data-i18n-title="tooltipExportDb" title="Download a copy of Clients.db. Once a month a backup copy of the database is saved automatically to the Monthly Database folder">Export Database</button>
         </div>
     </header>
     <main>
         <section id="clientListSection">
-            <h2>Llista de Clients</h2>
-            <input type="text" id="searchInput" placeholder="Buscar client per nom...">
+            <h2 data-i18n="clientListTitle">Client List</h2>
+            <input type="text" id="searchInput" placeholder="Search client by name..." data-i18n-placeholder="searchPlaceholder">
             <ul id="clientList"></ul>
         </section>
         <section id="newClientSection" class="hidden">
-            <h2>Afegir Nou Client</h2>
+            <h2 data-i18n="newClientTitle">Add New Client</h2>
             <form id="newClientForm">
-                <label for="name">Nom:</label>
+                <label for="name" data-i18n="labelName">Name:</label>
                 <input type="text" id="name">
-                <label for="phone">Telèfon:</label>
+                <label for="phone" data-i18n="labelPhone">Phone:</label>
                 <input type="tel" id="phone">
-                <label for="email">Correu:</label>
+                <label for="email" data-i18n="labelEmail">Email:</label>
                 <input type="email" id="email">
-                <label for="address">Adreça:</label>
+                <label for="address" data-i18n="labelAddress">Address:</label>
                 <input type="text" id="address">
-                <button type="submit">Afegir Client</button>
-                <button type="button" id="cancelNewClient">Cancel·lar</button>
+                <button type="submit" data-i18n="btnAddClient">Add Client</button>
+                <button type="button" id="cancelNewClient" data-i18n="btnCancel">Cancel</button>
             </form>
         </section>
         <section id="clientDetailsSection" class="hidden">
             <div class="client-header">
-                <h2>Informe del Client: <span id="clientName"></span></h2>
-                <button id="exportClientBtn">Exportar client a Excel</button>
+                <h2><span data-i18n="clientReportTitle">Client Report:</span> <span id="clientName"></span></h2>
+                <button id="exportClientBtn" data-i18n="btnExportClient">Export client to Excel</button>
             </div>
             <div id="clientInfo">
-                <p><strong>Telèfon:</strong> <span id="clientPhone"></span></p>
-                <p><strong>Correu:</strong> <span id="clientEmail"></span></p>
-                <p><strong>Adreça:</strong> <span id="clientAddress"></span></p>
+                <p><strong data-i18n="labelPhone">Phone:</strong> <span id="clientPhone"></span></p>
+                <p><strong data-i18n="labelEmail">Email:</strong> <span id="clientEmail"></span></p>
+                <p><strong data-i18n="labelAddress">Address:</strong> <span id="clientAddress"></span></p>
                 <div id="clientNotepad" class="notepad">
-                    <textarea id="notepadTextarea" placeholder="Escriu notes aquí..."></textarea>
+                    <textarea id="notepadTextarea" placeholder="Write notes here..." data-i18n-placeholder="labelNotes"></textarea>
                     <button id="expandNotepadBtn" class="expand-btn">⤢</button>
                 </div>
             </div>
-            <h2>Vendes</h2>
+            <h2 data-i18n="salesTitle">Sales</h2>
             <form id="addExpenseForm">
-                <label for="expenseDate">Data:</label>
+                <label for="expenseDate" data-i18n="labelDate">Date:</label>
                 <input type="date" id="expenseDate" required>
-                <label for="expenseProduct">Producte o Servei:</label>
+                <label for="expenseProduct" data-i18n="labelProduct">Product or Service:</label>
                 <div class="input-error-wrapper">
                     <input type="text" id="expenseProduct" required>
-                    <span class="error-message" id="expenseProductError">Omple aquest camp per afegir venda</span>
+                    <span class="error-message" id="expenseProductError" data-i18n="errorFillField">Fill this field to add sale</span>
                 </div>
-                <label for="expensePrice">Preu (€):</label>
+                <label for="expensePrice" data-i18n="labelPrice">Price (€):</label>
                 <div class="input-error-wrapper">
                     <input type="number" step="0.01" id="expensePrice" required>
-                    <span class="error-message" id="expensePriceError">Omple aquest camp per afegir venda</span>
+                    <span class="error-message" id="expensePriceError" data-i18n="errorFillField">Fill this field to add sale</span>
                 </div>
-                <button type="button" id="addExpenseBtn">Afegir venda</button>
-                <button type="button" id="manageSnippetsBtn" title="Selecciona producte o servei">Selecciona producte o servei 📝</button>
+                <button type="button" id="addExpenseBtn" data-i18n="btnAddSale">Add sale</button>
+                <button type="button" id="manageSnippetsBtn" data-i18n="btnSelectProduct" title="Select product or service">Select product or service 📝</button>
             </form>
             <ul id="expenseList"></ul>
-            <button id="backToList"><-- Torna enrere</button>
+            <button id="backToList" data-i18n="btnBack"><-- Go back</button>
         </section>
         <section id="vendesSection" class="hidden">
-            <h2>Llista de Vendes</h2>
+            <h2 data-i18n="salesListTitle">Sales List</h2>
             <ul id="vendesList"></ul>
         </section>
     </main>
     <!-- Delete Confirmation Modal -->
     <div id="deleteModal" class="modal" style="display: none;">
         <div class="modal-content">
-            <p id="deleteMessage"><h2>Eliminar?</h2></p>   
-            <button id="confirmDelete">SÍ</button>
-            <button id="cancelDelete">NO</button>
+            <p id="deleteMessage"><h2 data-i18n="deleteTitle">Delete?</h2></p>   
+            <button id="confirmDelete" data-i18n="btnYes">YES</button>
+            <button id="cancelDelete" data-i18n="btnNo">NO</button>
         </div>
     </div>
     <!-- Snippets Modal -->
     <div id="snippetsModal" class="modal" style="display: none;">
         <div class="modal-content">
-            <h3>Gestionar productes o serveis guardats</h3>
-            <label for="snippetText">Producte o Servei:</label>
-            <input type="text" id="snippetText" placeholder="Escriu aquí...">
-            <label for="snippetPrice">Preu (€):</label>
-            <input type="number" step="0.01" id="snippetPrice" placeholder="Escriu aquí...">
-            <button id="saveSnippetBtn">Guardar</button>
-            <h4>Selecciona:</h4>
-            <input type="text" id="snippetSearch" placeholder="Buscar producte o servei...">
+            <h3 data-i18n="snippetsTitle">Manage saved products or services</h3>
+            <label for="snippetText" data-i18n="snippetLabelProduct">Product or Service:</label>
+            <input type="text" id="snippetText" placeholder="Type here..." data-i18n-placeholder="snippetPlaceholderText">
+            <label for="snippetPrice" data-i18n="snippetLabelPrice">Price (€):</label>
+            <input type="number" step="0.01" id="snippetPrice" placeholder="Type here..." data-i18n-placeholder="snippetPlaceholderPrice">
+            <button id="saveSnippetBtn" data-i18n="btnSave">Save</button>
+            <h4 data-i18n="snippetSelectTitle">Select:</h4>
+            <input type="text" id="snippetSearch" placeholder="Search product or service..." data-i18n-placeholder="snippetSearchPlaceholder">
             <ul id="snippetsList"></ul>
-            <button id="closeSnippetsModal">Tancar</button>
+            <button id="closeSnippetsModal" data-i18n="btnClose">Close</button>
         </div>
     </div>
     <!-- Export Date Selection Modal -->
     <div id="exportModal" class="modal" style="display: none;">
         <div class="modal-content">
-            <h3>Seleccionar Dates per Exportar</h3>
-            <label for="exportStartDate">Des de (Data d'inici):</label>
+            <h3 data-i18n="exportTitle">Select Dates for Export</h3>
+            <label for="exportStartDate" data-i18n="labelExportStartDate">From (Start date):</label>
             <input type="date" id="exportStartDate" required>
-            <label for="exportEndDate">Fins (Data de fi):</label>
+            <label for="exportEndDate" data-i18n="labelExportEndDate">To (End date):</label>
             <input type="date" id="exportEndDate" required>
-            <button id="confirmExport">Exportar</button>
-            <button id="cancelExport">Cancel·lar</button>
+            <button id="confirmExport" data-i18n="btnExport">Export</button>
+            <button id="cancelExport" data-i18n="btnCancel">Cancel</button>
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="translations.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

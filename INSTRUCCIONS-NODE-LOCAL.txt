@@ -1,28 +1,28 @@
-INSTRUCCIONS:
+INSTRUCTIONS:
 
-INSTALA NODE
+INSTALL NODE
 
-1. Obrir la Terminal
-Prem la tecla Windows, escriu PowerShell i selecciona Executa com a administrador.
+1. Open the Terminal
+Press the Windows key, type PowerShell, and select Run as administrator.
 
-2. Buscar i instal·lar Node.js
-Escriu la següent comanda per instal·lar la versió LTS (la més estable i recomanada):
+2. Find and install Node.js
+Type the following command to install the LTS version (the most stable and recommended):
 
 
 winget install OpenJS.NodeJS.LTS
 
 
-3. Acceptar els termes
-Durant el procés, la consola et demanarà si acceptes els acords de llicència. Prem la tecla Y i després Enter.
+3. Accept the terms
+During the process, the console will ask if you accept the license agreements. Press the Y key and then Enter.
 
-4. Reiniciar la consola i verificar
-És important tancar la finestra de PowerShell i tornar-la a obrir perquè es reconeguin les noves rutes del sistema. Un cop oberta de nou, comprova que tot estigui correcte:
+4. Restart the console and verify
+It's important to close the PowerShell window and reopen it so that the new system paths are recognized. Once it's open again, check that everything is correct:
 
 PowerShell
 
 node -v
 npm -v
-Si et retornen els números de versió (per exemple, v20.x.x), ja tens Node.js instal·lat i a punt
+If you get back the version numbers (for example, v20.x.x), you have Node.js installed and ready to go.
 
 
 
@@ -31,32 +31,39 @@ Si et retornen els números de versió (per exemple, v20.x.x), ja tens Node.js i
 
 _______________________
 
-1. Crear l'script invisible
-Obre el Bloc de notes i enganxa aquest codi:
+1. Create the invisible script
+Open Notepad and paste this code:
 
-Set WshShell = CreateObject("WScript.Shell")
-WshShell.Run "cmd.exe /c cd /d ""[insert here the complete URL of the location of the project folder]"" && npm start", 0
+Set WshShell = CreateObject(“WScript.Shell”)
+WshShell.Run “cmd.exe /c cd /d ”“[insert here the complete URL of the location of the project folder]‘’ && npm start”, 0
 Set WshShell = Nothing
 
 
-2. Desar el fitxer
-Ves a Fitxer > Anomena i desa.
+2. Save the file
+Go to File > Save As.
 
-Al desplegable "Tipus", selecciona Tots els fitxers (.).
+In the “Save as type” dropdown, select “All files (*.*)”.
 
-Posa-li el nom: iniciar_node.vbs (és molt important que acabi en .vbs).
+Name it: `start_node.vbs` (it's very important that it ends with .vbs).
 
-Desa'l en un lloc segur (per exemple, a la mateixa carpeta del projecte).
+Save it in a safe place (for example, in the same folder as your project).
 
 
-3. Configurar l'arrencada automàtica
-Prem la tecla Windows + R.
 
-Escriu shell:startup i prem Enter. S'obrirà una carpeta.
 
-Copia i enganxa el teu fitxer iniciar_node.vbs dins d'aquesta carpeta.
+Translated with DeepL.com (free version)
 
-4. Verificació
-Reinicia el PC o simplement fes doble clic sobre el fitxer .vbs que has creat.
 
-Com que és invisible, no veuràs cap finestra. Per confirmar que funciona, obre el navegador i entra a l'adreça de la teva aplicació (ex: localhost:3000).
+3. Set up automatic startup
+Press the Windows key + R.
+
+Type shell:startup and press Enter. A folder will open.
+
+Copy and paste your start_node.vbs file inside this folder.
+
+4. Verification
+Restart your PC or simply double-click the .vbs file you created.
+
+Since it's invisible, you won't see any window. To confirm it's working, open your browser and go to your application's address (e.g., localhost:3000).
+
+Translated with DeepL.com (free version)

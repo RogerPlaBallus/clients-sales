@@ -6,66 +6,66 @@
 
 
 
-
-ClientsVendes - Gestor de Clients i Vendes
+ClientsVendes - Client and Sales Manager
 ==========================================
 
-__ClientsVendes__ és una aplicació de gestió lleugera i eficient dissenyada per a petites empreses. Permet portar un control exhaustiu dels clients, les vendes i les despeses mitjançant una interfície web intuïtiva i una base de dades local robusta.
+__ClientsVendes__ is a lightweight and efficient management application designed for small businesses. It allows you to keep thorough control of clients, sales and expenses through an intuitive web interface and a robust local database.
 
-🚀 Característiques Principals
+🚀 Key Features
 ----------------------------
 
-- __Gestió de Clients (CRUD):__ Creació, visualització i eliminació de clients de forma centralitzada. Guardar telèfon, correu, direcció i bloc de notes per a cada 
-client de manera persistent.
-- __Control de Vendes i Despeses:__ Registre detallat de transaccions associades a cada client: Producte o servei + preu de venda.
-- __Despeses Habituals:__ Sistema per crear, guardar i suprimir despeses recurrents per agilitzar el flux de treball.
-- __Exportació de Dades:__ Funcionalitat per exportar tota la informació a format Excel i realitzar còpies de seguretat de la base de dades.
-- __Interfície Neta:__ Disseny minimalista i funcional pensat per a l'usuari final.
+- __Client Management (CRUD):__ Create, view and delete clients in a centralized way. Store phone number, email, address and a notepad for each client persistently.
+- __Sales and Expense Tracking:__ Detailed record of transactions linked to each client: Product or service + sale price.
+- __Recurring Expenses:__ System to create, save and delete recurring expenses to streamline the workflow.
+- __Data Export:__ Functionality to export all information to Excel format and make database backups.
+- __Clean Interface:__ Minimalist and functional design aimed at the end user.
+- __Multi-language Support:__ Available in English, Catalan (Català) and Spanish (Español) with persistent language selection.
 
-🛠️ Stack Tecnològic
+🛠️ Tech Stack
 ------------------
 
-L'aplicació està construïda amb tecnologies web modernes per garantir velocitat i facilitat d'instal·lació:
+The application is built with modern web technologies to ensure speed and ease of installation:
 
-- __Frontend:__ HTML5, CSS3 i JavaScript (Vanilla).
+- __Frontend:__ HTML5, CSS3 and JavaScript (Vanilla).
 - __Backend:__ Node.js.
-- __Base de dades:__ SQLite (Base de dades local, sense necessitat de servidors externs).
+- __Database:__ SQLite (Local database, no external servers needed).
 
-📂 Estructura del Projecte
+📂 Project Structure
 ------------------------
 
-L'arbre de directoris es compon dels següents elements clau:
+The directory tree consists of the following key elements:
 
-- __server.js:__ Servidor principal en Node.js.
-- __index.html / styles.css / script.js:__ Nucli de la interfície d'usuari.
-- __Clients.db:__ Fitxer de la base de dades SQLite.
-- __/uploads:__ Carpeta per a fitxers adjunts o documents.
-- __/Base de Dades Mensual:__ Històrics i còpies de seguretat.
+- __server.js:__ Main Node.js server.
+- __index.html / styles.css / script.js:__ Core of the user interface.
+- __translations.js:__ Internationalization (i18n) translation dictionary.
+- __Clients.db:__ SQLite database file.
+- __/uploads:__ Folder for attachments or documents.
+- __/Base de Dades Mensual:__ Historical records and backups.
 
-💻 Instal·lació i Ús
+💻 Installation and Usage
 -------------------
 
-__Requisits previs__
+__Prerequisites__
 
-Cal tenir instal·lat Node.js al sistema.
+Node.js must be installed on the system.
 
-### Passos per a la posada en marxa
+### Steps to get started
 
-1.  **Descarregar o clonar** el repositori a la teva màquina local.
-2.  **Instal·lar les dependències** necessàries executant a la terminal:
+1.  **Download or clone** the repository to your local machine.
+2.  **Install the dependencies** by running in the terminal:
     ```bash
     npm install
     ```
-3.  **Iniciar el servidor**:
+3.  **Start the server**:
     ```bash
     node server.js
     ```
-4.  **Accedir a l'aplicació**:
-    Obre el navegador i entra a `http://localhost:3000` o utilitza l'accés directe `Gestió de Clients (LOCALHOST).url` inclòs a l'arrel del projecte.
+4.  **Access the application**:
+    Open the browser and go to `http://localhost:3000` or use the shortcut `Gestió de Clients (LOCALHOST).url` included in the project root.
 
 ---
 
-## ⚙️ Configuració Addicional
+## ⚙️ Additional Configuration
 
-Per a detalls tècnics sobre la instal·lació en entorns locals específics, consulta el fitxer:
+For technical details about installation on specific local environments, see the file:
 📄 `INSTRUCCIONS-NODE-LOCAL.txt`

@@ -65,25 +65,7 @@ function normalizeString(str) {
     return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
-// Helper function to get the next available ascending ID
-function getNextClientId() {
-    if (clients.length === 0) {
-        return 1;
-    }
 
-    const existingIds = clients.map(client => client.id).sort((a, b) => a - b);
-    let nextId = 1;
-
-    for (const id of existingIds) {
-        if (id === nextId) {
-            nextId++;
-        } else if (id > nextId) {
-            break;
-        }
-    }
-
-    return nextId;
-}
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', async () => {
@@ -130,6 +112,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadClients();
     await loadSnippets();
+    // Apply language translations
+    applyLanguage();
     // Ensure modals are hidden on load
     hideSnippetsModal();
     hideDeleteModal();
@@ -258,7 +242,7 @@ async function addClient(e) {
     const address = document.getElementById('address').value;
 
     if (!name.trim()) {
-        alert('Please enter a client name');
+        alert(t('alertEnterName'));
         return;
     }
 
@@ -277,7 +261,7 @@ async function addClient(e) {
         showClientList();
     } catch (error) {
         console.error('Error saving client:', error);
-        alert('Failed to save client. Please try again.');
+        alert(t('alertSaveFailed'));
     }
 }
 
@@ -325,7 +309,7 @@ function renderExpenses(expenses) {
             : `showDeleteModal(${validExpenses.indexOf(expense)})`;
         li.innerHTML = `
             <span>${formatDate(expense.date)} - ${expense.product} - €${expense.price}</span>
-            <button onclick="${deleteAction}" class="delete-btn">Eliminar</button>`;
+            <button onclick="${deleteAction}" class="delete-btn">${t('btnDelete')}</button>`;
         expenseList.appendChild(li);
     });
 }
@@ -358,7 +342,7 @@ function renderVendes() {
         const li = document.createElement('li');
         li.innerHTML = `
             <span>${formatDate(item.date)} - ${item.clientName} - ${item.product} - €${item.price}</span>
-            <button onclick="showDeleteVendesModal(${item.vendeId})" class="delete-btn small-delete-btn">Eliminar</button>
+            <button onclick="showDeleteVendesModal(${item.vendeId})" class="delete-btn small-delete-btn">${t('btnDelete')}</button>
         `;
         vendesList.appendChild(li);
     });
@@ -398,7 +382,7 @@ async function addExpense() {
 
     const client = clients.find(c => c.id === currentClientId);
     if (!client) {
-        alert('No client selected');
+        alert(t('alertNoClient'));
         return;
     }
 
@@ -430,7 +414,7 @@ async function addExpense() {
         document.getElementById('expenseDate').value = getCurrentDate();
     } catch (error) {
         console.error('Error saving expense:', error);
-        alert('Error en guardar la venda. Torna-ho a provar.');
+        alert(t('alertSaveError'));
     }
 }
 
@@ -481,11 +465,11 @@ function performExport() {
     const endDate = exportEndDate.value;
 
     if (!startDate) {
-        alert("Data d'inici requerida.");
+        alert(t('alertStartDateRequired'));
         return;
     }
     if (!endDate) {
-        alert("Data de fi requerida.");
+        alert(t('alertEndDateRequired'));
         return;
     }
 
@@ -495,17 +479,17 @@ function performExport() {
         expenses.forEach(expense => {
             if (expense.date >= startDate && expense.date <= endDate) {
                 data.push({
-                    Data: expense.date,
-                    Client: client.name,
-                    'Producte/Servei': expense.product,
-                    Preu: expense.price
+                    [t('excelDate')]: expense.date,
+                    [t('excelClient')]: client.name,
+                    [t('excelProduct')]: expense.product,
+                    [t('excelPrice')]: expense.price
                 });
             }
         });
     });
 
     if (data.length === 0) {
-        alert("No hi ha dades en el rang de dates seleccionat.");
+        alert(t('alertNoDataInRange'));
         return;
     }
 
@@ -528,10 +512,10 @@ function exportClientToExcel() {
     if (!client) return;
 
     const data = client.expenses.map(expense => ({
-        Data: formatDate(expense.date),
-        Client: client.name,
-        'Producte / Servei': expense.product,
-        'Preu (€)': expense.price
+        [t('excelDate')]: formatDate(expense.date),
+        [t('excelClient')]: client.name,
+        [t('excelProduct')]: expense.product,
+        [t('excelPrice')]: expense.price
     }));
 
     const ws = XLSX.utils.json_to_sheet(data);
@@ -559,7 +543,7 @@ function exportDatabase() {
         })
         .catch(error => {
             console.error('Error downloading database:', error);
-            alert('Error downloading database. Please try again.');
+            alert(t('alertDownloadDbError'));
         });
 }
 
@@ -586,7 +570,7 @@ function renderSnippets(filterTerm = '') {
         const displayPrice = snippet.price || 0;
         li.innerHTML = `
             <span>${displayName} - €${parseFloat(displayPrice).toFixed(2)}</span>
-            <button onclick="selectSnippet('${displayName.replace(/'/g, "\\'")}', ${displayPrice})">Seleccionar</button>
+            <button onclick="selectSnippet('${displayName.replace(/'/g, "\\'")}', ${displayPrice})">${t('btnSelect')}</button>
             <button onclick="deleteSnippetFromServer(${snippet.id}); event.stopPropagation();" class="delete-btn">🗑️</button>
         `;
         snippetsList.appendChild(li);
@@ -598,7 +582,7 @@ function saveSnippet() {
     const price = parseFloat(document.getElementById('snippetPrice').value);
 
     if (!text || !price) {
-        alert('Omple els camps de producte/servei i preu.');
+        alert(t('alertFillFields'));
         return;
     }
 
@@ -624,7 +608,7 @@ async function saveSnippetToServer(name, price) {
         await loadSnippets();
     } catch (error) {
         console.error('Error saving product/service:', error);
-        alert('Error en guardar: ' + error.message);
+        alert(t('alertSaveSnippetError') + error.message);
     }
 }
 
@@ -650,11 +634,7 @@ function showDeleteClientModal(clientId) {
     deleteModal.style.display = 'flex';
 }
 
-function showDeleteSnippetModal(index) {
-    // This function is deprecated - use deleteSnippetFromServer() directly
-    // Kept for backward compatibility but not used
-    console.log('Deprecated: use deleteSnippetFromServer() instead');
-}
+
 
 function showDeleteVendesModal(vendeId) {
     vendesToDelete = { vendeId };
@@ -692,7 +672,7 @@ async function deleteExpense() {
             }
         } catch (error) {
             console.error('Error deleting venda:', error);
-            alert('Failed to delete venda. Please try again.');
+            alert(t('alertDeleteVendaFailed'));
         }
     } else if (clientToDelete !== null) {
         try {
@@ -712,7 +692,7 @@ async function deleteExpense() {
             document.getElementById('clientListSection').classList.remove('hidden');
         } catch (error) {
             console.error('Error deleting client:', error);
-            alert('Failed to delete client. Please try again.');
+            alert(t('alertDeleteClientFailed'));
         }
     } else if (vendesToDelete !== null) {
         try {
@@ -730,7 +710,7 @@ async function deleteExpense() {
             renderVendes();
         } catch (error) {
             console.error('Error deleting venda:', error);
-            alert('Failed to delete venda. Please try again.');
+            alert(t('alertDeleteVendaFailed'));
         }
     }
     hideDeleteModal();
@@ -747,21 +727,10 @@ async function loadClients() {
         renderClientList();
     } catch (error) {
         console.error('Error loading clients:', error);
-        alert('Error loading clients. Please check the server.');
+        alert(t('alertLoadClientsError'));
     }
 }
 
-async function saveClients() {
-    try {
-        // Note: This function is kept for backward compatibility
-        // Individual clients are now saved via saveSingleClient()
-        console.log('saveClients() called - reloading from server');
-        await loadClients();
-    } catch (error) {
-        console.error('Error in saveClients:', error);
-        throw error;
-    }
-}
 
 async function saveSingleClient(client) {
     try {
@@ -806,7 +775,7 @@ async function loadSnippets() {
 }
 
 async function deleteSnippetFromServer(snippetId) {
-    if (!confirm('Estàs segur que vols eliminar aquest producte/servei?')) {
+    if (!confirm(t('alertConfirmDeleteSnippet'))) {
         return;
     }
 
@@ -823,15 +792,10 @@ async function deleteSnippetFromServer(snippetId) {
         await loadSnippets();
     } catch (error) {
         console.error('Error deleting product/service:', error);
-        alert('Error en eliminar: ' + error.message);
+        alert(t('alertDeleteSnippetError') + error.message);
     }
 }
 
-async function saveSnippets() {
-    // This function is kept for backward compatibility
-    // Individual snippets are now saved via saveSnippetToServer()
-    console.log('saveSnippets() called - snippets are now saved to server automatically');
-}
 
 // Notepad functions
 async function saveNotepad() {
