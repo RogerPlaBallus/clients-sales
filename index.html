@@ -19,14 +19,6 @@
     </div>
 
     <header>
-        <div class="language-selector">
-            <select id="languageSelect" onchange="setLanguage(this.value)">
-                <option value="en">English</option>
-                <option value="ca">Catala</option>
-                <option value="es">Espanol</option>
-            </select>
-        </div>
-
         <h1 data-i18n="headerTitle">CLIENT MANAGER</h1>
 
         <div class="header-buttons">
@@ -36,6 +28,13 @@
             <button id="exportBtn" data-i18n="btnExportAll" data-i18n-title="tooltipExportAll" title="Export clients and sales to Excel">Export ALL to Excel</button>
             <button id="exportDbBtn" data-i18n="btnExportDb" data-i18n-title="tooltipExportDb" title="Download the current browser-only demo database snapshot">Export Database</button>
             <button id="demoResetBtn" data-i18n="btnResetDemo" data-i18n-title="tooltipResetDemo" title="Restore the original bundled demo data in this browser">Reset demo data</button>
+            <div class="language-selector">
+                <select id="languageSelect" onchange="setLanguage(this.value)">
+                    <option value="en">English</option>
+                    <option value="ca">Català</option>
+                    <option value="es">Español</option>
+                </select>
+            </div>
         </div>
     </header>
 
