@@ -1,0 +1,4 @@
+node_modules/
+*.backup
+uploads/
+Base de Dades Mensual/

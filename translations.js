@@ -1,29 +1,28 @@
-// Translation dictionary for all supported languages
 const translations = {
   en: {
-    // Page title
     pageTitle: "Client Manager",
     headerTitle: "CLIENT MANAGER",
+    demoBannerTitle: "Portfolio Demo",
+    demoBannerText: "Changes are saved only in this browser. The bundled Clients.db file is never modified.",
 
-    // Header buttons
     btnClients: "Clients",
     btnSales: "Sales",
     btnNewClient: "New Client",
     btnExportAll: "Export ALL to Excel",
     btnExportDb: "Export Database",
+    btnResetDemo: "Reset demo data",
 
-    // Header button tooltips
     tooltipClients: "View all clients",
     tooltipSales: "View all sales",
     tooltipNewClient: "Create a new client",
-    tooltipExportAll: "Export Clients + Sales to Excel",
-    tooltipExportDb: "Download a copy of Clients.db. Once a month a backup copy of the database is saved automatically to the Monthly Database folder",
+    tooltipExportAll: "Export clients and sales to Excel",
+    tooltipExportDb: "Download the current browser-only demo database snapshot",
+    tooltipResetDemo: "Restore the original bundled demo data in this browser",
+    tooltipCloseBanner: "Hide portfolio demo banner",
 
-    // Client list section
     clientListTitle: "Client List",
     searchPlaceholder: "Search client by name...",
 
-    // New client section
     newClientTitle: "Add New Client",
     labelName: "Name:",
     labelPhone: "Phone:",
@@ -32,35 +31,28 @@ const translations = {
     btnAddClient: "Add Client",
     btnCancel: "Cancel",
 
-    // Client details section
     clientReportTitle: "Client Report:",
     btnExportClient: "Export client to Excel",
     labelNotes: "Write notes here...",
 
-    // Sales form
     salesTitle: "Sales",
     labelDate: "Date:",
     labelProduct: "Product or Service:",
-    labelPrice: "Price (€):",
+    labelPrice: "Price (EUR):",
     btnAddSale: "Add sale",
-    btnSelectProduct: "Select product or service 📝",
+    btnSelectProduct: "Select product or service",
     errorFillField: "Fill this field to add sale",
 
-    // Sales list section
     salesListTitle: "Sales List",
-
-    // Back button
     btnBack: "<-- Go back",
 
-    // Delete modal
     deleteTitle: "Delete?",
     btnYes: "YES",
     btnNo: "NO",
 
-    // Snippets modal
     snippetsTitle: "Manage saved products or services",
     snippetLabelProduct: "Product or Service:",
-    snippetLabelPrice: "Price (€):",
+    snippetLabelPrice: "Price (EUR):",
     snippetPlaceholderText: "Type here...",
     snippetPlaceholderPrice: "Type here...",
     btnSave: "Save",
@@ -69,19 +61,16 @@ const translations = {
     btnClose: "Close",
     btnSelect: "Select",
 
-    // Export modal
     exportTitle: "Select Dates for Export",
     labelExportStartDate: "From (Start date):",
     labelExportEndDate: "To (End date):",
     btnExport: "Export",
 
-    // Delete button text in lists
     btnDelete: "Delete",
 
-    // Alert messages
-    alertEnterName: "Please enter a client name",
+    alertEnterName: "Please enter a client name.",
     alertSaveFailed: "Failed to save client. Please try again.",
-    alertNoClient: "No client selected",
+    alertNoClient: "No client selected.",
     alertSaveError: "Error saving the sale. Please try again.",
     alertFillFields: "Fill the product/service and price fields.",
     alertSaveSnippetError: "Error saving: ",
@@ -90,70 +79,77 @@ const translations = {
     alertStartDateRequired: "Start date required.",
     alertEndDateRequired: "End date required.",
     alertNoDataInRange: "No data in the selected date range.",
-    alertLoadClientsError: "Error loading clients. Please check the server.",
+    alertLoadClientsError: "Error loading clients from the browser database.",
     alertDeleteVendaFailed: "Failed to delete sale. Please try again.",
     alertDeleteClientFailed: "Failed to delete client. Please try again.",
-    alertDownloadDbError: "Error downloading database. Please try again.",
+    alertDownloadDbError: "Error downloading the browser database. Please try again.",
+    alertNoSalesToExport: "This client has no sales to export yet.",
+    alertResetDemoConfirm: "Reset this browser demo back to the original bundled data?",
+    alertResetDemoFailed: "Unable to reset the browser demo data. Please try again.",
+    alertBrowserInitFailed: "The browser demo database could not be started.",
 
-    // Excel export column headers
     excelDate: "Date",
     excelClient: "Client",
     excelProduct: "Product/Service",
-    excelPrice: "Price (€)",
+    excelPrice: "Price (EUR)"
   },
 
   ca: {
     pageTitle: "Gestor de Clients",
     headerTitle: "GESTOR DE CLIENTS",
+    demoBannerTitle: "Portfolio Demo",
+    demoBannerText: "Els canvis es guarden nomes en aquest navegador. El fitxer Clients.db publicat no es modifica mai.",
 
     btnClients: "Clients",
     btnSales: "Vendes",
     btnNewClient: "Nou Client",
     btnExportAll: "Exportar TOT a Excel",
     btnExportDb: "Exportar Base de dades",
+    btnResetDemo: "Restablir dades demo",
 
     tooltipClients: "Visualitza tots els clients",
     tooltipSales: "Visualitza totes les vendes",
     tooltipNewClient: "Crea un nou client",
-    tooltipExportAll: "Exporta Clients + Vendes a Excel",
-    tooltipExportDb: "Baixa ara una còpia de Clients.db. Un cop al mes es guardarà automàticament una còpia de la bbdd a la carpeta Base de Dades mensual",
+    tooltipExportAll: "Exporta clients i vendes a Excel",
+    tooltipExportDb: "Baixa la copia actual de la base de dades guardada nomes en aquest navegador",
+    tooltipResetDemo: "Recupera les dades originals del portfolio en aquest navegador",
+    tooltipCloseBanner: "Amaga el banner del portfolio",
 
     clientListTitle: "Llista de Clients",
     searchPlaceholder: "Buscar client per nom...",
 
     newClientTitle: "Afegir Nou Client",
     labelName: "Nom:",
-    labelPhone: "Telèfon:",
+    labelPhone: "Telefon:",
     labelEmail: "Correu:",
-    labelAddress: "Adreça:",
+    labelAddress: "Adreca:",
     btnAddClient: "Afegir Client",
-    btnCancel: "Cancel·lar",
+    btnCancel: "Cancelar",
 
     clientReportTitle: "Informe del Client:",
     btnExportClient: "Exportar client a Excel",
-    labelNotes: "Escriu notes aquí...",
+    labelNotes: "Escriu notes aqui...",
 
     salesTitle: "Vendes",
     labelDate: "Data:",
     labelProduct: "Producte o Servei:",
-    labelPrice: "Preu (€):",
+    labelPrice: "Preu (EUR):",
     btnAddSale: "Afegir venda",
-    btnSelectProduct: "Selecciona producte o servei 📝",
+    btnSelectProduct: "Selecciona producte o servei",
     errorFillField: "Omple aquest camp per afegir venda",
 
     salesListTitle: "Llista de Vendes",
-
     btnBack: "<-- Torna enrere",
 
     deleteTitle: "Eliminar?",
-    btnYes: "SÍ",
+    btnYes: "SI",
     btnNo: "NO",
 
     snippetsTitle: "Gestionar productes o serveis guardats",
     snippetLabelProduct: "Producte o Servei:",
-    snippetLabelPrice: "Preu (€):",
-    snippetPlaceholderText: "Escriu aquí...",
-    snippetPlaceholderPrice: "Escriu aquí...",
+    snippetLabelPrice: "Preu (EUR):",
+    snippetPlaceholderText: "Escriu aqui...",
+    snippetPlaceholderPrice: "Escriu aqui...",
     btnSave: "Guardar",
     snippetSelectTitle: "Selecciona:",
     snippetSearchPlaceholder: "Buscar producte o servei...",
@@ -167,80 +163,88 @@ const translations = {
 
     btnDelete: "Eliminar",
 
-    alertEnterName: "Si us plau, introdueix un nom de client",
+    alertEnterName: "Si us plau, introdueix un nom de client.",
     alertSaveFailed: "Error en guardar el client. Torna-ho a provar.",
-    alertNoClient: "Cap client seleccionat",
+    alertNoClient: "Cap client seleccionat.",
     alertSaveError: "Error en guardar la venda. Torna-ho a provar.",
     alertFillFields: "Omple els camps de producte/servei i preu.",
     alertSaveSnippetError: "Error en guardar: ",
-    alertConfirmDeleteSnippet: "Estàs segur que vols eliminar aquest producte/servei?",
+    alertConfirmDeleteSnippet: "Estas segur que vols eliminar aquest producte/servei?",
     alertDeleteSnippetError: "Error en eliminar: ",
     alertStartDateRequired: "Data d'inici requerida.",
     alertEndDateRequired: "Data de fi requerida.",
     alertNoDataInRange: "No hi ha dades en el rang de dates seleccionat.",
-    alertLoadClientsError: "Error carregant clients. Comprova el servidor.",
+    alertLoadClientsError: "Error carregant clients des de la base de dades del navegador.",
     alertDeleteVendaFailed: "Error en eliminar la venda. Torna-ho a provar.",
     alertDeleteClientFailed: "Error en eliminar el client. Torna-ho a provar.",
-    alertDownloadDbError: "Error descarregant la base de dades. Torna-ho a provar.",
+    alertDownloadDbError: "Error descarregant la base de dades del navegador. Torna-ho a provar.",
+    alertNoSalesToExport: "Aquest client encara no te vendes per exportar.",
+    alertResetDemoConfirm: "Vols restablir aquest navegador a les dades originals del portfolio?",
+    alertResetDemoFailed: "No s'han pogut restablir les dades del demo. Torna-ho a provar.",
+    alertBrowserInitFailed: "No s'ha pogut iniciar la base de dades del demo al navegador.",
 
     excelDate: "Data",
     excelClient: "Client",
     excelProduct: "Producte/Servei",
-    excelPrice: "Preu (€)",
+    excelPrice: "Preu (EUR)"
   },
 
   es: {
     pageTitle: "Gestor de Clientes",
     headerTitle: "GESTOR DE CLIENTES",
+    demoBannerTitle: "Portfolio Demo",
+    demoBannerText: "Los cambios se guardan solo en este navegador. El archivo Clients.db publicado nunca se modifica.",
 
     btnClients: "Clientes",
     btnSales: "Ventas",
     btnNewClient: "Nuevo Cliente",
     btnExportAll: "Exportar TODO a Excel",
     btnExportDb: "Exportar Base de datos",
+    btnResetDemo: "Restablecer demo",
 
     tooltipClients: "Ver todos los clientes",
     tooltipSales: "Ver todas las ventas",
     tooltipNewClient: "Crear un nuevo cliente",
-    tooltipExportAll: "Exportar Clientes + Ventas a Excel",
-    tooltipExportDb: "Descarga una copia de Clients.db. Una vez al mes se guardará automáticamente una copia de la bbdd en la carpeta Base de Datos mensual",
+    tooltipExportAll: "Exportar clientes y ventas a Excel",
+    tooltipExportDb: "Descarga la copia actual de la base de datos guardada solo en este navegador",
+    tooltipResetDemo: "Recupera los datos originales del portfolio en este navegador",
+    tooltipCloseBanner: "Ocultar banner del portfolio",
 
     clientListTitle: "Lista de Clientes",
     searchPlaceholder: "Buscar cliente por nombre...",
 
-    newClientTitle: "Añadir Nuevo Cliente",
+    newClientTitle: "Anadir Nuevo Cliente",
     labelName: "Nombre:",
-    labelPhone: "Teléfono:",
+    labelPhone: "Telefono:",
     labelEmail: "Correo:",
-    labelAddress: "Dirección:",
-    btnAddClient: "Añadir Cliente",
+    labelAddress: "Direccion:",
+    btnAddClient: "Anadir Cliente",
     btnCancel: "Cancelar",
 
     clientReportTitle: "Informe del Cliente:",
     btnExportClient: "Exportar cliente a Excel",
-    labelNotes: "Escribe notas aquí...",
+    labelNotes: "Escribe notas aqui...",
 
     salesTitle: "Ventas",
     labelDate: "Fecha:",
     labelProduct: "Producto o Servicio:",
-    labelPrice: "Precio (€):",
-    btnAddSale: "Añadir venta",
-    btnSelectProduct: "Seleccionar producto o servicio 📝",
-    errorFillField: "Rellena este campo para añadir venta",
+    labelPrice: "Precio (EUR):",
+    btnAddSale: "Anadir venta",
+    btnSelectProduct: "Seleccionar producto o servicio",
+    errorFillField: "Rellena este campo para anadir venta",
 
     salesListTitle: "Lista de Ventas",
+    btnBack: "<-- Volver atras",
 
-    btnBack: "<-- Volver atrás",
-
-    deleteTitle: "¿Eliminar?",
-    btnYes: "SÍ",
+    deleteTitle: "Eliminar?",
+    btnYes: "SI",
     btnNo: "NO",
 
     snippetsTitle: "Gestionar productos o servicios guardados",
     snippetLabelProduct: "Producto o Servicio:",
-    snippetLabelPrice: "Precio (€):",
-    snippetPlaceholderText: "Escribe aquí...",
-    snippetPlaceholderPrice: "Escribe aquí...",
+    snippetLabelPrice: "Precio (EUR):",
+    snippetPlaceholderText: "Escribe aqui...",
+    snippetPlaceholderPrice: "Escribe aqui...",
     btnSave: "Guardar",
     snippetSelectTitle: "Seleccionar:",
     snippetSearchPlaceholder: "Buscar producto o servicio...",
@@ -254,70 +258,70 @@ const translations = {
 
     btnDelete: "Eliminar",
 
-    alertEnterName: "Por favor, introduce un nombre de cliente",
-    alertSaveFailed: "Error al guardar el cliente. Inténtalo de nuevo.",
-    alertNoClient: "Ningún cliente seleccionado",
-    alertSaveError: "Error al guardar la venta. Inténtalo de nuevo.",
+    alertEnterName: "Por favor, introduce un nombre de cliente.",
+    alertSaveFailed: "Error al guardar el cliente. Intentalo de nuevo.",
+    alertNoClient: "Ningun cliente seleccionado.",
+    alertSaveError: "Error al guardar la venta. Intentalo de nuevo.",
     alertFillFields: "Rellena los campos de producto/servicio y precio.",
     alertSaveSnippetError: "Error al guardar: ",
-    alertConfirmDeleteSnippet: "¿Estás seguro de que quieres eliminar este producto/servicio?",
+    alertConfirmDeleteSnippet: "Estas seguro de que quieres eliminar este producto/servicio?",
     alertDeleteSnippetError: "Error al eliminar: ",
     alertStartDateRequired: "Fecha de inicio requerida.",
     alertEndDateRequired: "Fecha de fin requerida.",
     alertNoDataInRange: "No hay datos en el rango de fechas seleccionado.",
-    alertLoadClientsError: "Error cargando clientes. Comprueba el servidor.",
-    alertDeleteVendaFailed: "Error al eliminar la venta. Inténtalo de nuevo.",
-    alertDeleteClientFailed: "Error al eliminar el cliente. Inténtalo de nuevo.",
-    alertDownloadDbError: "Error descargando la base de datos. Inténtalo de nuevo.",
+    alertLoadClientsError: "Error cargando clientes desde la base de datos del navegador.",
+    alertDeleteVendaFailed: "Error al eliminar la venta. Intentalo de nuevo.",
+    alertDeleteClientFailed: "Error al eliminar el cliente. Intentalo de nuevo.",
+    alertDownloadDbError: "Error descargando la base de datos del navegador. Intentalo de nuevo.",
+    alertNoSalesToExport: "Este cliente todavia no tiene ventas para exportar.",
+    alertResetDemoConfirm: "Quieres restablecer este navegador a los datos originales del portfolio?",
+    alertResetDemoFailed: "No se han podido restablecer los datos del demo. Intentalo de nuevo.",
+    alertBrowserInitFailed: "No se ha podido iniciar la base de datos del demo en el navegador.",
 
     excelDate: "Fecha",
     excelClient: "Cliente",
     excelProduct: "Producto/Servicio",
-    excelPrice: "Precio (€)",
+    excelPrice: "Precio (EUR)"
   }
 };
 
-// Get the current language from localStorage, default to English
 function getCurrentLanguage() {
   return localStorage.getItem('appLanguage') || 'en';
 }
 
-// Set the current language and persist it
 function setLanguage(lang) {
   localStorage.setItem('appLanguage', lang);
   applyLanguage();
 }
 
-// Get a translated string by key
 function t(key) {
   const lang = getCurrentLanguage();
-  return translations[lang][key] || translations['en'][key] || key;
+  return translations[lang][key] || translations.en[key] || key;
 }
 
-// Apply translations to all elements with data-i18n attributes
 function applyLanguage() {
   const lang = getCurrentLanguage();
   document.documentElement.lang = lang;
   document.title = t('pageTitle');
 
-  // Update elements with data-i18n attribute (text content)
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    el.textContent = t(el.dataset.i18n);
+  document.querySelectorAll('[data-i18n]').forEach((element) => {
+    element.textContent = t(element.dataset.i18n);
   });
 
-  // Update elements with data-i18n-placeholder attribute
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-    el.placeholder = t(el.dataset.i18nPlaceholder);
+  document.querySelectorAll('[data-i18n-placeholder]').forEach((element) => {
+    element.placeholder = t(element.dataset.i18nPlaceholder);
   });
 
-  // Update elements with data-i18n-title attribute (tooltips)
-  document.querySelectorAll('[data-i18n-title]').forEach(el => {
-    el.title = t(el.dataset.i18nTitle);
+  document.querySelectorAll('[data-i18n-title]').forEach((element) => {
+    element.title = t(element.dataset.i18nTitle);
   });
 
-  // Update the language selector to reflect the current language
   const langSelect = document.getElementById('languageSelect');
   if (langSelect) {
     langSelect.value = lang;
+  }
+
+  if (typeof window.refreshDynamicContent === 'function') {
+    window.refreshDynamicContent();
   }
 }

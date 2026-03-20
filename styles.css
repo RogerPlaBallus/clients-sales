@@ -1,4 +1,3 @@
-/* Basic reset */
 * {
     margin: 0;
     padding: 0;
@@ -9,7 +8,7 @@ body {
     font-family: Arial, sans-serif;
     line-height: 1.6;
     color: #333;
-    background-color: #d5d5d5;
+    background: #d5d5d5;
     padding: 20px;
 }
 
@@ -23,26 +22,6 @@ h1 {
     color: #2c3e50;
 }
 
-.header-buttons {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    margin-top: 10px;
-}
-
-main {
-    max-width: 1000px;
-    margin: 0 auto;
-    background-color: white;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-section {
-    margin-bottom: 30px;
-}
-
 h2 {
     color: #34495e;
     margin-bottom: 15px;
@@ -50,47 +29,69 @@ h2 {
     padding-bottom: 5px;
 }
 
+main {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+section {
+    margin-bottom: 30px;
+}
+
 .hidden {
     display: none;
 }
 
-#searchInput, #vendesSearchInput {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
+.demo-banner {
+    max-width: 1000px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, #20344f 0%, #3a5f86 100%);
+    color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 10px 20px rgba(32, 52, 79, 0.18);
 }
 
-#clientList {
-    list-style: none;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-#clientList li {
-    padding: 15px;
-    border-bottom: 1px solid #eee;
-    cursor: pointer;
-    transition: background-color 0.2s;
+.demo-banner__body {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 14px 18px;
 }
 
-#clientList li:hover {
-    background-color: #f9f9f9;
+.demo-banner__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
 }
 
-#clientList li:last-child {
-    border-bottom: none;
+.demo-banner__close {
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: #fff;
+    min-width: 40px;
+    padding: 8px 10px;
 }
 
-form {
-    margin-bottom: 20px;
+.demo-banner__close:hover {
+    background: rgba(255, 255, 255, 0.24);
+}
+
+.header-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 12px;
+}
+
+.header-buttons button {
+    margin-right: 0;
 }
 
 label {
@@ -99,7 +100,9 @@ label {
     font-weight: bold;
 }
 
-input, select {
+input,
+select,
+textarea {
     width: 100%;
     padding: 8px;
     border: 1px solid #ddd;
@@ -130,8 +133,8 @@ input.error {
 }
 
 button {
-    background-color: #3498db;
-    color: white;
+    background: #3498db;
+    color: #fff;
     padding: 10px 15px;
     border: none;
     border-radius: 4px;
@@ -141,136 +144,107 @@ button {
 }
 
 button:hover {
-    background-color: #2980b9;
+    background: #2980b9;
 }
 
 .delete-btn {
-    background-color: red;
+    background: #c0392b;
 }
 
 .delete-btn:hover {
-    background-color: #cc0000;
+    background: #992d22;
+}
+
+.small-delete-btn {
+    padding: 6px 10px;
+    font-size: 14px;
+}
+
+#exportBtn,
+#exportClientBtn,
+#exportDbBtn {
+    background: #138f3d;
+}
+
+#exportBtn:hover,
+#exportClientBtn:hover,
+#exportDbBtn:hover {
+    background: #0f7130;
+}
+
+#demoResetBtn {
+    background: #c96b2c;
+}
+
+#demoResetBtn:hover {
+    background: #a9561f;
 }
 
 #backToList {
     margin-top: 20px;
 }
 
-#exportBtn, #exportClientBtn, #exportDbBtn {
-    background-color: #079309;
-}
-
-#exportBtn:hover, #exportClientBtn:hover, #exportDbBtn:hover {
-    background-color: #45a049;
-}
-
-#expenseList, #snippetsList {
-    list-style: none;
-    margin-top: 20px;
-}
-
-#expenseList {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-#expenseList li, #snippetsList li {
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-#expenseList li:last-child, #snippetsList li:last-child {
-    border-bottom: none;
-}
-
-#vendesList {
-    list-style: none;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-#vendesList li {
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 5px;
-}
-
-#vendesList li:last-child {
-    border-bottom: none;
-}
-
-.small-delete-btn {
-    padding: 5px 8px;
-    font-size: 14px;
-}
-
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
+#searchInput {
     width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+    margin-bottom: 20px;
 }
 
-.modal-content {
-    background-color: white;
-    padding: 10px;
-    border-radius: 5px;
-    max-width: 1200px;
-    width: 95%;
-    max-height: 90%;
+#clientList,
+#expenseList,
+#vendesList,
+#snippetsList {
+    list-style: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
     overflow-y: auto;
 }
 
-#deleteModal {
-    z-index: 1001;
+#clientList,
+#expenseList,
+#vendesList {
+    max-height: 400px;
 }
 
-#deleteModal .modal-content {
-    width: 300px;
-    text-align: center;
-    padding: 20px;
-}
-
-.modal-content h3 {
-    margin-bottom: 15px;
-}
-
-.modal-content label {
-    margin-top: 10px;
-}
-
-.modal-content button {
-    margin-top: 10px;
-}
-
+#clientList li,
+#expenseList li,
+#vendesList li,
 #snippetsList li {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+#clientList li {
     cursor: pointer;
 }
 
+#clientList li:hover,
 #snippetsList li:hover {
-    background-color: #f9f9f9;
+    background: #f9f9f9;
+}
+
+#clientList li:last-child,
+#expenseList li:last-child,
+#vendesList li:last-child,
+#snippetsList li:last-child {
+    border-bottom: none;
+}
+
+.list-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .client-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 16px;
     margin-bottom: 20px;
 }
 
@@ -284,12 +258,13 @@ button:hover {
 
 .notepad {
     position: relative;
-    width: 950px;
-    height: 100px;
+    width: 100%;
+    min-height: 120px;
+    height: 120px;
     border: 1px solid #ddd;
     border-radius: 4px;
     padding: 8px;
-    background-color: #f9f9f9;
+    background: #f9f9f9;
     margin-top: 10px;
     overflow: hidden;
     transition: height 0.3s ease;
@@ -308,55 +283,65 @@ button:hover {
     font-family: Arial, sans-serif;
     font-size: 14px;
     outline: none;
+    margin-bottom: 0;
 }
 
 .expand-btn {
     position: absolute;
-    bottom: 5px;
-    right: 5px;
-    background: #3498db;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    padding: 2px 6px;
-    cursor: pointer;
-    font-size: 12px;
+    right: 8px;
+    bottom: 8px;
+    padding: 4px 10px;
+    font-size: 14px;
 }
 
-.expand-btn:hover {
-    background: #2980b9;
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
-@media (max-width: 768px) {
-    .header-buttons {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .client-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    #clientList li {
-        padding: 10px;
-    }
-
-    .modal-content {
-        width: 95%;
-        padding: 15px;
-    }
+.modal-content {
+    background: #fff;
+    padding: 18px;
+    border-radius: 8px;
+    width: min(95vw, 800px);
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
-/* Export modal date inputs */
-#exportStartDate, #exportEndDate {
+#deleteModal {
+    z-index: 1001;
+}
+
+#deleteModal .modal-content {
+    width: 300px;
+    text-align: center;
+}
+
+#deleteModal .modal-content button {
+    margin-top: 10px;
+}
+
+.modal-content h3,
+.modal-content h4 {
+    margin-bottom: 12px;
+}
+
+.modal-content label {
+    margin-top: 10px;
+}
+
+#exportStartDate,
+#exportEndDate {
     width: 200px;
 }
 
-/* Export modal styling */
 #exportModal .modal-content {
-    width: 400px;
-    max-width: 400px;
+    width: min(95vw, 420px);
 }
 
 #exportModal .modal-content button {
@@ -366,24 +351,21 @@ button:hover {
     margin-right: 0;
 }
 
-/* Expense date input styling */
 #expenseDate {
     width: 150px;
 }
 
-/* Language selector */
 .language-selector {
     position: absolute;
-    top: 10px;
-    right: 20px;
+    top: 0;
+    right: 0;
 }
 
 .language-selector select {
     width: auto;
     padding: 5px 10px;
     border: 1px solid #3498db;
-    border-radius: 4px;
-    background-color: white;
+    background: #fff;
     font-size: 14px;
     cursor: pointer;
     color: #2c3e50;
@@ -391,4 +373,50 @@ button:hover {
 
 .language-selector select:hover {
     border-color: #2980b9;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 14px;
+    }
+
+    .demo-banner__body,
+    .client-header,
+    #clientList li,
+    #expenseList li,
+    #vendesList li,
+    #snippetsList li {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .demo-banner__close,
+    .list-actions,
+    .client-header button,
+    #clientList li button,
+    #expenseList li button,
+    #vendesList li button {
+        width: 100%;
+    }
+
+    .header-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .header-buttons button {
+        width: 100%;
+        margin-right: 0;
+    }
+
+    .language-selector {
+        position: static;
+        margin-bottom: 12px;
+    }
+
+    #exportStartDate,
+    #exportEndDate,
+    #expenseDate {
+        width: 100%;
+    }
 }

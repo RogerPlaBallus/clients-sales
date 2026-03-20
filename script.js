@@ -1,7 +1,11 @@
-// Global variables
+// Global state
 let clients = [];
 let currentClientId = null;
 let snippets = [];
+let expenseToDelete = null;
+let clientToDelete = null;
+let vendesToDelete = null;
+let notepadSaveTimeoutId = null;
 
 // DOM elements
 let clientList;
@@ -19,10 +23,14 @@ let notepadTextarea;
 let expandNotepadBtn;
 let expenseList;
 let addExpenseForm;
+let addExpenseBtn;
 let backToList;
 let exportBtn;
 let exportClientBtn;
 let exportDbBtn;
+let demoResetBtn;
+let demoBanner;
+let demoBannerCloseBtn;
 let deleteModal;
 let confirmDelete;
 let cancelDelete;
@@ -37,14 +45,12 @@ let iniciBtn;
 let vendesBtn;
 let vendesSection;
 let vendesList;
-let searchVendesInput;
 let exportModal;
 let exportStartDate;
 let exportEndDate;
 let confirmExport;
 let cancelExport;
 
-// Helper function to get current date in YYYY-MM-DD format
 function getCurrentDate() {
     const today = new Date();
     const year = today.getFullYear();
@@ -53,23 +59,44 @@ function getCurrentDate() {
     return `${year}-${month}-${day}`;
 }
 
-// Helper function to format date to DD-MM-YYYY
+function getDateOnly(dateString) {
+    if (!dateString) {
+        return '';
+    }
+
+    return String(dateString).split('T')[0].split(' ')[0];
+}
+
 function formatDate(dateString) {
-    if (!dateString) return '';
-    const [year, month, day] = dateString.split('-');
+    const normalisedDate = getDateOnly(dateString);
+    if (!normalisedDate) {
+        return '';
+    }
+
+    const [year, month, day] = normalisedDate.split('-');
     return `${day}-${month}-${year}`;
 }
 
-// Helper function to normalize string for search (remove accents and lowercase)
-function normalizeString(str) {
-    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+function formatCurrency(value) {
+    const amount = Number(value) || 0;
+    return new Intl.NumberFormat(getCurrentLanguage(), {
+        style: 'currency',
+        currency: 'EUR'
+    }).format(amount);
 }
 
+function normalizeString(str = '') {
+    return String(str)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+}
 
+function getClientVendes(client) {
+    return client?.vendes || client?.expenses || [];
+}
 
-// Event listeners
-document.addEventListener('DOMContentLoaded', async () => {
-    // Initialize DOM elements
+function cacheDomElements() {
     clientList = document.getElementById('clientList');
     searchInput = document.getElementById('searchInput');
     newClientBtn = document.getElementById('newClientBtn');
@@ -85,10 +112,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     expandNotepadBtn = document.getElementById('expandNotepadBtn');
     expenseList = document.getElementById('expenseList');
     addExpenseForm = document.getElementById('addExpenseForm');
+    addExpenseBtn = document.getElementById('addExpenseBtn');
     backToList = document.getElementById('backToList');
     exportBtn = document.getElementById('exportBtn');
     exportClientBtn = document.getElementById('exportClientBtn');
     exportDbBtn = document.getElementById('exportDbBtn');
+    demoResetBtn = document.getElementById('demoResetBtn');
+    demoBanner = document.getElementById('demoBanner');
+    demoBannerCloseBtn = document.getElementById('demoBannerCloseBtn');
     deleteModal = document.getElementById('deleteModal');
     confirmDelete = document.getElementById('confirmDelete');
     cancelDelete = document.getElementById('cancelDelete');
@@ -103,21 +134,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     vendesBtn = document.getElementById('vendesBtn');
     vendesSection = document.getElementById('vendesSection');
     vendesList = document.getElementById('vendesList');
-    searchVendesInput = document.getElementById('searchVendesInput');
     exportModal = document.getElementById('exportModal');
     exportStartDate = document.getElementById('exportStartDate');
     exportEndDate = document.getElementById('exportEndDate');
     confirmExport = document.getElementById('confirmExport');
     cancelExport = document.getElementById('cancelExport');
+}
 
-    await loadClients();
-    await loadSnippets();
-    // Apply language translations
-    applyLanguage();
-    // Ensure modals are hidden on load
-    hideSnippetsModal();
-    hideDeleteModal();
-
+function bindEventListeners() {
     iniciBtn.addEventListener('click', showClientList);
     vendesBtn.addEventListener('click', showVendes);
     newClientBtn.addEventListener('click', showNewClientForm);
@@ -126,13 +150,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     searchInput.addEventListener('input', filterClients);
     snippetSearch.addEventListener('input', filterSnippets);
     addExpenseBtn.addEventListener('click', addExpense);
-    backToList.addEventListener('click', async () => {
-        await saveNotepad();
-        showClientList();
-    });
+    backToList.addEventListener('click', showClientList);
     exportBtn.addEventListener('click', exportAllToExcel);
     exportClientBtn.addEventListener('click', exportClientToExcel);
     exportDbBtn.addEventListener('click', exportDatabase);
+    demoResetBtn.addEventListener('click', resetDemoData);
     manageSnippetsBtn.addEventListener('click', showSnippetsModal);
     saveSnippetBtn.addEventListener('click', saveSnippet);
     closeSnippetsModal.addEventListener('click', hideSnippetsModal);
@@ -140,70 +162,102 @@ document.addEventListener('DOMContentLoaded', async () => {
     cancelDelete.addEventListener('click', hideDeleteModal);
     confirmExport.addEventListener('click', performExport);
     cancelExport.addEventListener('click', hideExportModal);
-
-    // Notepad event listeners
-    notepadTextarea.addEventListener('input', saveNotepad);
-    notepadTextarea.addEventListener('blur', saveNotepad);
+    notepadTextarea.addEventListener('input', queueNotepadSave);
+    notepadTextarea.addEventListener('blur', flushNotepadSave);
     expandNotepadBtn.addEventListener('click', toggleNotepadSize);
 
-    // Close modals by clicking outside
-    snippetsModal.addEventListener('click', (e) => {
-        if (e.target === snippetsModal) {
+    if (demoBannerCloseBtn) {
+        demoBannerCloseBtn.addEventListener('click', hideDemoBanner);
+    }
+
+    snippetsModal.addEventListener('click', (event) => {
+        if (event.target === snippetsModal) {
             hideSnippetsModal();
         }
     });
 
-    deleteModal.addEventListener('click', (e) => {
-        if (e.target === deleteModal) {
+    deleteModal.addEventListener('click', (event) => {
+        if (event.target === deleteModal) {
             hideDeleteModal();
         }
     });
 
-    exportModal.addEventListener('click', (e) => {
-        if (e.target === exportModal) {
+    exportModal.addEventListener('click', (event) => {
+        if (event.target === exportModal) {
             hideExportModal();
         }
     });
 
-    // Close modals with ESC key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            if (snippetsModal.style.display !== 'none') {
-                hideSnippetsModal();
-            }
-            if (deleteModal.style.display !== 'none') {
-                hideDeleteModal();
-            }
-            if (exportModal.style.display !== 'none') {
-                hideExportModal();
-            }
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') {
+            return;
+        }
+
+        if (snippetsModal.style.display !== 'none') {
+            hideSnippetsModal();
+        }
+
+        if (deleteModal.style.display !== 'none') {
+            hideDeleteModal();
+        }
+
+        if (exportModal.style.display !== 'none') {
+            hideExportModal();
         }
     });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await initBrowserDB();
+    } catch (error) {
+        console.error('Error initialising browser database:', error);
+        alert(t('alertBrowserInitFailed'));
+        return;
+    }
+
+    cacheDomElements();
+    bindEventListeners();
+
+    await loadClients();
+    await loadSnippets();
+
+    applyLanguage();
+    hideSnippetsModal();
+    hideDeleteModal();
+    hideExportModal();
+    restoreDemoBannerState();
 });
 
-// Functions
-function renderClientList() {
+function renderClientList(clientItems = clients) {
     clientList.innerHTML = '';
-    clients.forEach(client => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-            <span>${client.name}</span>
-            <button class="delete-btn">🗑️</button>
-        `;
-        li.addEventListener('click', () => showClientDetails(client.id));
-        const deleteBtn = li.querySelector('.delete-btn');
-        deleteBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
+
+    clientItems.forEach((client) => {
+        const listItem = document.createElement('li');
+        const name = document.createElement('span');
+        const deleteButton = document.createElement('button');
+
+        name.textContent = client.name;
+        deleteButton.className = 'delete-btn';
+        deleteButton.textContent = t('btnDelete');
+
+        listItem.addEventListener('click', () => showClientDetails(client.id));
+        deleteButton.addEventListener('click', (event) => {
+            event.stopPropagation();
             showDeleteClientModal(client.id);
         });
-        clientList.appendChild(li);
+
+        listItem.appendChild(name);
+        listItem.appendChild(deleteButton);
+        clientList.appendChild(listItem);
     });
 }
 
 async function showClientList() {
     if (currentClientId) {
-        await saveNotepad();
+        await flushNotepadSave();
     }
+
     document.getElementById('clientListSection').classList.remove('hidden');
     newClientSection.classList.add('hidden');
     clientDetailsSection.classList.add('hidden');
@@ -213,8 +267,9 @@ async function showClientList() {
 
 async function showVendes() {
     if (currentClientId) {
-        await saveNotepad();
+        await flushNotepadSave();
     }
+
     document.getElementById('clientListSection').classList.add('hidden');
     newClientSection.classList.add('hidden');
     clientDetailsSection.classList.add('hidden');
@@ -224,41 +279,40 @@ async function showVendes() {
 
 async function showNewClientForm() {
     if (currentClientId) {
-        await saveNotepad();
+        await flushNotepadSave();
     }
+
     document.getElementById('clientListSection').classList.add('hidden');
     newClientSection.classList.remove('hidden');
     clientDetailsSection.classList.add('hidden');
     newClientForm.reset();
-    // Focus the first input field
     document.getElementById('name').focus();
 }
 
-async function addClient(e) {
-    e.preventDefault();
-    const name = document.getElementById('name').value;
-    const phone = document.getElementById('phone').value;
-    const email = document.getElementById('email').value;
-    const address = document.getElementById('address').value;
+async function addClient(event) {
+    event.preventDefault();
 
-    if (!name.trim()) {
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const address = document.getElementById('address').value.trim();
+
+    if (!name) {
         alert(t('alertEnterName'));
         return;
     }
 
-    const newClient = {
-        name: name.trim(),
-        phone: phone.trim(),
-        email: email.trim(),
-        address: address.trim(),
-        notepad: ''
-    };
-
     try {
-        console.log('Saving new client:', newClient);
-        await saveSingleClient(newClient);
+        await saveSingleClient({
+            name,
+            phone,
+            email,
+            address,
+            notepad: ''
+        });
+
         newClientForm.reset();
-        showClientList();
+        await showClientList();
     } catch (error) {
         console.error('Error saving client:', error);
         alert(t('alertSaveFailed'));
@@ -266,85 +320,75 @@ async function addClient(e) {
 }
 
 function showClientDetails(clientId) {
-    console.log('showClientDetails called with clientId:', clientId);
     currentClientId = clientId;
-    const client = clients.find(c => c.id === clientId);
-    console.log('Found client:', client);
-    if (!client) return;
+    const client = clients.find((item) => item.id === clientId);
+    if (!client) {
+        return;
+    }
 
     clientName.textContent = client.name;
     clientPhone.textContent = client.phone;
     clientEmail.textContent = client.email;
     clientAddress.textContent = client.address;
     notepadTextarea.value = client.notepad || '';
-
-    // Use 'vendes' field from new API, fallback to 'expenses' for compatibility
-    const expenses = client.vendes || client.expenses || [];
-    renderExpenses(expenses);
-
-    // Set the date field to the current date
+    renderExpenses(getClientVendes(client));
     document.getElementById('expenseDate').value = getCurrentDate();
 
     document.getElementById('clientListSection').classList.add('hidden');
     newClientSection.classList.add('hidden');
     clientDetailsSection.classList.remove('hidden');
-    console.log('Sections toggled');
 }
 
 function renderExpenses(expenses) {
     expenseList.innerHTML = '';
-    // Handle both 'expenses' (legacy) and 'vendes' (new) field names
-    const expensesArray = expenses || [];
-    const validExpenses = expensesArray.filter(expense => expense.product !== null && expense.price !== null);
-    const sortedExpenses = validExpenses.slice().sort((a, b) => {
-        if (!a.date) return 1;
-        if (!b.date) return -1;
-        return b.date.localeCompare(a.date);
-    });
+
+    const sortedExpenses = [...(expenses || [])]
+        .filter((expense) => expense.product !== null && expense.price !== null)
+        .sort((left, right) => new Date(right.date || 0) - new Date(left.date || 0));
+
     sortedExpenses.forEach((expense) => {
-        const li = document.createElement('li');
-        // Use expense.id if available (new API), otherwise fall back to index-based deletion
-        const deleteAction = expense.id 
-            ? `showDeleteModal(${expense.id})` 
-            : `showDeleteModal(${validExpenses.indexOf(expense)})`;
-        li.innerHTML = `
-            <span>${formatDate(expense.date)} - ${expense.product} - €${expense.price}</span>
-            <button onclick="${deleteAction}" class="delete-btn">${t('btnDelete')}</button>`;
-        expenseList.appendChild(li);
+        const listItem = document.createElement('li');
+        const label = document.createElement('span');
+        const deleteButton = document.createElement('button');
+
+        label.textContent = `${formatDate(expense.date)} - ${expense.product} - ${formatCurrency(expense.price)}`;
+        deleteButton.className = 'delete-btn';
+        deleteButton.textContent = t('btnDelete');
+        deleteButton.addEventListener('click', () => showDeleteModal(expense.id));
+
+        listItem.appendChild(label);
+        listItem.appendChild(deleteButton);
+        expenseList.appendChild(listItem);
     });
 }
 
 function renderVendes() {
     vendesList.innerHTML = '';
-    const allExpenses = [];
-    clients.forEach(client => {
-        // Use 'vendes' field from new API, fallback to 'expenses' for compatibility
-        const vendesData = client.vendes || client.expenses || [];
-        vendesData.forEach((expense) => {
-            if (expense.product !== null && expense.price !== null) {
-                allExpenses.push({
-                    vendeId: expense.id, // Use venda ID from server
-                    clientId: client.id,
-                    clientName: client.name,
-                    date: expense.date,
-                    product: expense.product,
-                    price: expense.price
-                });
-            }
-        });
-    });
-    allExpenses.sort((a, b) => {
-        if (!a.date) return 1;
-        if (!b.date) return -1;
-        return new Date(b.date) - new Date(a.date);
-    });
-    allExpenses.forEach(item => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-            <span>${formatDate(item.date)} - ${item.clientName} - ${item.product} - €${item.price}</span>
-            <button onclick="showDeleteVendesModal(${item.vendeId})" class="delete-btn small-delete-btn">${t('btnDelete')}</button>
-        `;
-        vendesList.appendChild(li);
+
+    const allVendes = clients
+        .flatMap((client) => getClientVendes(client).map((venda) => ({
+            vendeId: venda.id,
+            clientId: client.id,
+            clientName: client.name,
+            date: venda.date,
+            product: venda.product,
+            price: venda.price
+        })))
+        .sort((left, right) => new Date(right.date || 0) - new Date(left.date || 0));
+
+    allVendes.forEach((venda) => {
+        const listItem = document.createElement('li');
+        const label = document.createElement('span');
+        const deleteButton = document.createElement('button');
+
+        label.textContent = `${formatDate(venda.date)} - ${venda.clientName} - ${venda.product} - ${formatCurrency(venda.price)}`;
+        deleteButton.className = 'delete-btn small-delete-btn';
+        deleteButton.textContent = t('btnDelete');
+        deleteButton.addEventListener('click', () => showDeleteVendesModal(venda.vendeId));
+
+        listItem.appendChild(label);
+        listItem.appendChild(deleteButton);
+        vendesList.appendChild(listItem);
     });
 }
 
@@ -352,25 +396,25 @@ async function addExpense() {
     const date = document.getElementById('expenseDate').value;
     const productInput = document.getElementById('expenseProduct');
     const priceInput = document.getElementById('expensePrice');
-    const product = productInput.value;
-    const price = parseFloat(priceInput.value);
-
-    // Clear previous error states
+    const product = productInput.value.trim();
+    const price = Number.parseFloat(priceInput.value);
     const productError = document.getElementById('expenseProductError');
     const priceError = document.getElementById('expensePriceError');
+
     productInput.classList.remove('error');
     priceInput.classList.remove('error');
     productError.classList.remove('show');
     priceError.classList.remove('show');
 
-    // Validate fields
     let isValid = true;
-    if (!product || product.trim() === '') {
+
+    if (!product) {
         productInput.classList.add('error');
         productError.classList.add('show');
         isValid = false;
     }
-    if (!price || isNaN(price) || price <= 0) {
+
+    if (Number.isNaN(price) || price <= 0) {
         priceInput.classList.add('error');
         priceError.classList.add('show');
         isValid = false;
@@ -380,73 +424,47 @@ async function addExpense() {
         return;
     }
 
-    const client = clients.find(c => c.id === currentClientId);
+    const client = clients.find((item) => item.id === currentClientId);
     if (!client) {
         alert(t('alertNoClient'));
         return;
     }
 
     try {
-        // Save to server using new API
-        const response = await fetch('http://localhost:3000/api/vendes', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                client_id: currentClientId,
-                product: product.trim(),
-                price: price,
-                date: date
-            })
+        apiPostVenda({
+            client_id: currentClientId,
+            product,
+            price,
+            date: date || getCurrentDate()
         });
 
-        if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
+        await loadClients();
+
+        const updatedClient = clients.find((item) => item.id === currentClientId);
+        if (updatedClient) {
+            renderExpenses(getClientVendes(updatedClient));
         }
 
-        // Reload clients to refresh the list
-        await loadClients();
-        const updatedClient = clients.find(c => c.id === currentClientId);
-        if (updatedClient) {
-            renderExpenses(updatedClient.vendes || []);
-        }
         addExpenseForm.reset();
-        // Set the date field to the current date after reset
         document.getElementById('expenseDate').value = getCurrentDate();
     } catch (error) {
-        console.error('Error saving expense:', error);
+        console.error('Error saving sale:', error);
         alert(t('alertSaveError'));
     }
 }
 
 function filterClients() {
     const searchTerm = normalizeString(searchInput.value);
-    const filteredClients = clients.filter(client =>
+    const filteredClients = clients.filter((client) =>
         normalizeString(client.name).includes(searchTerm)
     );
 
-    clientList.innerHTML = '';
-    filteredClients.forEach(client => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-            <span>${client.name}</span>
-            <button class="delete-btn">🗑️</button>
-        `;
-        li.addEventListener('click', () => showClientDetails(client.id));
-        const deleteBtn = li.querySelector('.delete-btn');
-        deleteBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            showDeleteClientModal(client.id);
-        });
-        clientList.appendChild(li);
-    });
+    renderClientList(filteredClients);
 }
 
 function filterSnippets() {
-    const searchTerm = normalizeString(snippetSearch.value);
-    renderSnippets(searchTerm);
+    renderSnippets(snippetSearch.value);
 }
-
-
 
 function exportAllToExcel() {
     showExportModal();
@@ -468,18 +486,20 @@ function performExport() {
         alert(t('alertStartDateRequired'));
         return;
     }
+
     if (!endDate) {
         alert(t('alertEndDateRequired'));
         return;
     }
 
-    const data = [];
-    clients.forEach(client => {
-        const expenses = client.vendes || client.expenses || [];
-        expenses.forEach(expense => {
-            if (expense.date >= startDate && expense.date <= endDate) {
-                data.push({
-                    [t('excelDate')]: expense.date,
+    const rows = [];
+
+    clients.forEach((client) => {
+        getClientVendes(client).forEach((expense) => {
+            const expenseDate = getDateOnly(expense.date);
+            if (expenseDate >= startDate && expenseDate <= endDate) {
+                rows.push({
+                    [t('excelDate')]: expenseDate,
                     [t('excelClient')]: client.name,
                     [t('excelProduct')]: expense.product,
                     [t('excelPrice')]: expense.price
@@ -488,66 +508,66 @@ function performExport() {
         });
     });
 
-    if (data.length === 0) {
+    if (!rows.length) {
         alert(t('alertNoDataInRange'));
         return;
     }
 
-    const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [
-        {wch: 20}, // Client
-        {wch: 12}, // Data
-        {wch: 25}, // Producte/Servei
-        {wch: 10}  // Preu (€)
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    worksheet['!cols'] = [
+        { wch: 12 },
+        { wch: 20 },
+        { wch: 25 },
+        { wch: 12 }
     ];
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Clients');
-    XLSX.writeFile(wb, `clients_${startDate}_to_${endDate}.xlsx`);
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Clients');
+    XLSX.writeFile(workbook, `clients_${startDate}_to_${endDate}.xlsx`);
 
     hideExportModal();
 }
 
 function exportClientToExcel() {
-    const client = clients.find(c => c.id === currentClientId);
-    if (!client) return;
+    const client = clients.find((item) => item.id === currentClientId);
+    if (!client) {
+        return;
+    }
 
-    const data = client.expenses.map(expense => ({
+    const sales = getClientVendes(client);
+    if (!sales.length) {
+        alert(t('alertNoSalesToExport'));
+        return;
+    }
+
+    const rows = sales.map((expense) => ({
         [t('excelDate')]: formatDate(expense.date),
         [t('excelClient')]: client.name,
         [t('excelProduct')]: expense.product,
         [t('excelPrice')]: expense.price
     }));
 
-    const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [
-        {wch: 12}, // Data
-        {wch: 20}, // Client
-        {wch: 25}, // Producte / Servei
-        {wch: 10}  // Preu (€)
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    worksheet['!cols'] = [
+        { wch: 12 },
+        { wch: 20 },
+        { wch: 25 },
+        { wch: 12 }
     ];
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, client.name);
-    XLSX.writeFile(wb, `${client.name}.xlsx`);
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, client.name);
+    XLSX.writeFile(workbook, `${client.name}.xlsx`);
 }
 
 function exportDatabase() {
-    fetch('http://localhost:3000/api/export-db')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to download database');
-            }
-            return response.blob();
-        })
-        .then(blob => {
-            saveAs(blob, 'clients.db');
-        })
-        .catch(error => {
-            console.error('Error downloading database:', error);
-            alert(t('alertDownloadDbError'));
-        });
+    try {
+        saveAs(apiExportDb(), 'clients-browser-demo.db');
+    } catch (error) {
+        console.error('Error downloading browser database:', error);
+        alert(t('alertDownloadDbError'));
+    }
 }
-
-
 
 function showSnippetsModal() {
     snippetsModal.style.display = 'flex';
@@ -561,27 +581,44 @@ function hideSnippetsModal() {
 
 function renderSnippets(filterTerm = '') {
     snippetsList.innerHTML = '';
-    const filteredSnippets = snippets.filter(snippet =>
-        normalizeString(snippet.name || snippet.text).includes(normalizeString(filterTerm))
+
+    const filteredSnippets = snippets.filter((snippet) =>
+        normalizeString(snippet.name).includes(normalizeString(filterTerm))
     );
+
     filteredSnippets.forEach((snippet) => {
-        const li = document.createElement('li');
-        const displayName = snippet.name || snippet.text;
-        const displayPrice = snippet.price || 0;
-        li.innerHTML = `
-            <span>${displayName} - €${parseFloat(displayPrice).toFixed(2)}</span>
-            <button onclick="selectSnippet('${displayName.replace(/'/g, "\\'")}', ${displayPrice})">${t('btnSelect')}</button>
-            <button onclick="deleteSnippetFromServer(${snippet.id}); event.stopPropagation();" class="delete-btn">🗑️</button>
-        `;
-        snippetsList.appendChild(li);
+        const listItem = document.createElement('li');
+        const label = document.createElement('span');
+        const actions = document.createElement('div');
+        const selectButton = document.createElement('button');
+        const deleteButton = document.createElement('button');
+
+        label.textContent = `${snippet.name} - ${formatCurrency(snippet.price)}`;
+        actions.className = 'list-actions';
+
+        selectButton.textContent = t('btnSelect');
+        selectButton.addEventListener('click', () => selectSnippet(snippet.name, snippet.price));
+
+        deleteButton.className = 'delete-btn';
+        deleteButton.textContent = t('btnDelete');
+        deleteButton.addEventListener('click', (event) => {
+            event.stopPropagation();
+            deleteSnippetFromServer(snippet.id);
+        });
+
+        actions.appendChild(selectButton);
+        actions.appendChild(deleteButton);
+        listItem.appendChild(label);
+        listItem.appendChild(actions);
+        snippetsList.appendChild(listItem);
     });
 }
 
 function saveSnippet() {
-    const text = document.getElementById('snippetText').value;
-    const price = parseFloat(document.getElementById('snippetPrice').value);
+    const text = document.getElementById('snippetText').value.trim();
+    const price = Number.parseFloat(document.getElementById('snippetPrice').value);
 
-    if (!text || !price) {
+    if (!text || Number.isNaN(price) || price < 0) {
         alert(t('alertFillFields'));
         return;
     }
@@ -591,18 +628,7 @@ function saveSnippet() {
 
 async function saveSnippetToServer(name, price) {
     try {
-        const response = await fetch('http://localhost:3000/api/productes-serveis', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, price, descripcio: '' })
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to save product/service');
-        }
-
-        // Clear inputs and reload snippets
+        apiPostProducte({ name, price, descripcio: '' });
         document.getElementById('snippetText').value = '';
         document.getElementById('snippetPrice').value = '';
         await loadSnippets();
@@ -617,9 +643,6 @@ function selectSnippet(text, price) {
     document.getElementById('expensePrice').value = price;
     hideSnippetsModal();
 }
-let expenseToDelete = null;
-let clientToDelete = null;
-let vendesToDelete = null;
 
 function showDeleteModal(vendeId) {
     expenseToDelete = vendeId;
@@ -631,10 +654,9 @@ function showDeleteModal(vendeId) {
 function showDeleteClientModal(clientId) {
     clientToDelete = clientId;
     expenseToDelete = null;
+    vendesToDelete = null;
     deleteModal.style.display = 'flex';
 }
-
-
 
 function showDeleteVendesModal(vendeId) {
     vendesToDelete = { vendeId };
@@ -651,127 +673,64 @@ function hideDeleteModal() {
 }
 
 async function deleteExpense() {
-    if (expenseToDelete !== null) {
-        try {
-            // Delete venda from backend via /api/vendes/:id DELETE
-            const response = await fetch(`http://localhost:3000/api/vendes/${expenseToDelete}`, {
-                method: 'DELETE'
-            });
-            
-            if (!response.ok) {
-                throw new Error('Failed to delete venda');
-            }
-            
-            // Reload clients to sync UI with server state
+    try {
+        if (expenseToDelete !== null) {
+            apiDeleteVenda(expenseToDelete);
             await loadClients();
-            
-            // Refresh current client's expenses display
-            const client = clients.find(c => c.id === currentClientId);
+
+            const client = clients.find((item) => item.id === currentClientId);
             if (client) {
-                renderExpenses(client.vendes || client.expenses || []);
+                renderExpenses(getClientVendes(client));
             }
-        } catch (error) {
-            console.error('Error deleting venda:', error);
-            alert(t('alertDeleteVendaFailed'));
-        }
-    } else if (clientToDelete !== null) {
-        try {
-            // Delete client from backend via /api/clients/:id DELETE
-            const response = await fetch(`http://localhost:3000/api/clients/${clientToDelete}`, {
-                method: 'DELETE'
-            });
-            
-            if (!response.ok) {
-                throw new Error('Failed to delete client');
-            }
-            
-            // Reload clients to sync UI with server state
+        } else if (clientToDelete !== null) {
+            apiDeleteClient(clientToDelete);
             await loadClients();
-            renderClientList();
-            clientDetailsSection.classList.add('hidden');
-            document.getElementById('clientListSection').classList.remove('hidden');
-        } catch (error) {
-            console.error('Error deleting client:', error);
-            alert(t('alertDeleteClientFailed'));
-        }
-    } else if (vendesToDelete !== null) {
-        try {
-            // Delete venda from backend via /api/vendes/:id DELETE
-            const response = await fetch(`http://localhost:3000/api/vendes/${vendesToDelete.vendeId}`, {
-                method: 'DELETE'
-            });
-            
-            if (!response.ok) {
-                throw new Error('Failed to delete venda');
-            }
-            
-            // Reload clients to sync UI with server state
+            await showClientList();
+        } else if (vendesToDelete !== null) {
+            apiDeleteVenda(vendesToDelete.vendeId);
             await loadClients();
             renderVendes();
-        } catch (error) {
-            console.error('Error deleting venda:', error);
-            alert(t('alertDeleteVendaFailed'));
         }
+    } catch (error) {
+        console.error('Error deleting item:', error);
+        alert(expenseToDelete !== null || vendesToDelete !== null ? t('alertDeleteVendaFailed') : t('alertDeleteClientFailed'));
+    } finally {
+        hideDeleteModal();
     }
-    hideDeleteModal();
 }
 
-// API functions
 async function loadClients() {
     try {
-        const response = await fetch('http://localhost:3000/api/clients');
-        if (!response.ok) {
-            throw new Error('Failed to load clients');
-        }
-        clients = await response.json();
-        renderClientList();
+        clients = apiGetClients();
+        filterClients();
     } catch (error) {
         console.error('Error loading clients:', error);
         alert(t('alertLoadClientsError'));
     }
 }
 
-
 async function saveSingleClient(client) {
-    try {
-        const response = await fetch('http://localhost:3000/api/clients', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: client.name,
-                phone: client.phone,
-                email: client.email,
-                address: client.address,
-                notepad: client.notepad || ''
-            })
-        });
-        if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
-        }
-        const result = await response.json();
-        // Reload clients to ensure UI reflects server state
-        await loadClients();
-        return result;
-    } catch (error) {
-        console.error('Error saving client:', error);
-        throw error;
-    }
+    const result = apiPostClient({
+        name: client.name,
+        phone: client.phone,
+        email: client.email,
+        address: client.address,
+        notepad: client.notepad || ''
+    });
+
+    await loadClients();
+    return result;
 }
 
-// Snippets/Products API functions
 async function loadSnippets() {
     try {
-        const response = await fetch('http://localhost:3000/api/productes-serveis');
-        if (!response.ok) {
-            throw new Error('Failed to load products/services');
-        }
-        snippets = await response.json();
-        renderSnippets();
+        snippets = apiGetProductes();
     } catch (error) {
         console.error('Error loading products/services:', error);
         snippets = [];
-        renderSnippets();
     }
+
+    renderSnippets(snippetSearch ? snippetSearch.value : '');
 }
 
 async function deleteSnippetFromServer(snippetId) {
@@ -780,15 +739,7 @@ async function deleteSnippetFromServer(snippetId) {
     }
 
     try {
-        const response = await fetch(`http://localhost:3000/api/productes-serveis/${snippetId}`, {
-            method: 'DELETE'
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to delete product/service');
-        }
-
-        // Reload snippets to reflect deletion
+        apiDeleteProducte(snippetId);
         await loadSnippets();
     } catch (error) {
         console.error('Error deleting product/service:', error);
@@ -796,36 +747,40 @@ async function deleteSnippetFromServer(snippetId) {
     }
 }
 
+function queueNotepadSave() {
+    window.clearTimeout(notepadSaveTimeoutId);
+    notepadSaveTimeoutId = window.setTimeout(() => {
+        saveNotepad().catch((error) => {
+            console.error('Error saving notepad:', error);
+        });
+    }, 250);
+}
 
-// Notepad functions
+async function flushNotepadSave() {
+    if (notepadSaveTimeoutId) {
+        window.clearTimeout(notepadSaveTimeoutId);
+        notepadSaveTimeoutId = null;
+    }
+
+    await saveNotepad();
+}
+
 async function saveNotepad() {
-    console.log('saveNotepad called');
-    const client = clients.find(c => c.id === currentClientId);
+    const client = clients.find((item) => item.id === currentClientId);
     if (!client) {
-        console.log('No client found for currentClientId:', currentClientId);
         return;
     }
 
     client.notepad = notepadTextarea.value;
-    console.log('Updated client notepad:', client.notepad);
+
     try {
-        const response = await fetch(`http://localhost:3000/api/clients/${currentClientId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: client.name,
-                phone: client.phone,
-                email: client.email,
-                address: client.address,
-                notepad: client.notepad
-            })
+        apiPutClient(currentClientId, {
+            name: client.name,
+            phone: client.phone,
+            email: client.email,
+            address: client.address,
+            notepad: client.notepad
         });
-
-        if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
-        }
-
-        console.log('Notepad saved successfully');
     } catch (error) {
         console.error('Error saving notepad:', error);
     }
@@ -833,9 +788,82 @@ async function saveNotepad() {
 
 function toggleNotepadSize() {
     clientNotepad.classList.toggle('expanded');
-    if (clientNotepad.classList.contains('expanded')) {
-        expandNotepadBtn.textContent = '⤣';
-    } else {
-        expandNotepadBtn.textContent = '⤢';
+    expandNotepadBtn.textContent = clientNotepad.classList.contains('expanded') ? '-' : '+';
+}
+
+async function resetDemoData() {
+    if (!confirm(t('alertResetDemoConfirm'))) {
+        return;
+    }
+
+    try {
+        if (notepadSaveTimeoutId) {
+            window.clearTimeout(notepadSaveTimeoutId);
+            notepadSaveTimeoutId = null;
+        }
+
+        await resetBrowserDB();
+
+        currentClientId = null;
+        newClientForm.reset();
+        addExpenseForm.reset();
+        searchInput.value = '';
+        snippetSearch.value = '';
+        notepadTextarea.value = '';
+        clientNotepad.classList.remove('expanded');
+        expandNotepadBtn.textContent = '+';
+
+        await loadClients();
+        await loadSnippets();
+        await showClientList();
+    } catch (error) {
+        console.error('Error resetting demo data:', error);
+        alert(t('alertResetDemoFailed'));
     }
 }
+
+function hideDemoBanner() {
+    if (!demoBanner) {
+        return;
+    }
+
+    demoBanner.classList.add('hidden');
+    localStorage.setItem('demoBannerHidden', '1');
+}
+
+function restoreDemoBannerState() {
+    if (!demoBanner) {
+        return;
+    }
+
+    if (localStorage.getItem('demoBannerHidden') === '1') {
+        demoBanner.classList.add('hidden');
+    }
+}
+
+window.refreshDynamicContent = function refreshDynamicContent() {
+    if (!clientList) {
+        return;
+    }
+
+    filterClients();
+
+    if (currentClientId && !clientDetailsSection.classList.contains('hidden')) {
+        const client = clients.find((item) => item.id === currentClientId);
+        if (client) {
+            clientName.textContent = client.name;
+            clientPhone.textContent = client.phone;
+            clientEmail.textContent = client.email;
+            clientAddress.textContent = client.address;
+            renderExpenses(getClientVendes(client));
+        }
+    }
+
+    if (!vendesSection.classList.contains('hidden')) {
+        renderVendes();
+    }
+
+    if (snippetsModal.style.display !== 'none') {
+        renderSnippets(snippetSearch.value);
+    }
+};

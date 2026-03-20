@@ -1,71 +1,56 @@
-<img width="1918" height="909" alt="image" src="https://github.com/user-attachments/assets/3f76aa05-4c4e-433d-9f43-a46ec6c20e2b" />
-<img width="1902" height="898" alt="image" src="https://github.com/user-attachments/assets/e8788cd3-925a-4d18-a47c-0dd2f7696090" />
-<img width="981" height="879" alt="image" src="https://github.com/user-attachments/assets/e4880cff-dae5-4f59-b648-43c4e9504059" />
-<img width="1220" height="422" alt="image" src="https://github.com/user-attachments/assets/6c0ed483-7d79-4961-95c3-3e8e9e9307d2" />
+<img width="1918" height="909" alt="ClientsVendes screenshot 1" src="https://github.com/user-attachments/assets/3f76aa05-4c4e-433d-9f43-a46ec6c20e2b" />
+<img width="1902" height="898" alt="ClientsVendes screenshot 2" src="https://github.com/user-attachments/assets/e8788cd3-925a-4d18-a47c-0dd2f7696090" />
+<img width="981" height="879" alt="ClientsVendes screenshot 3" src="https://github.com/user-attachments/assets/e4880cff-dae5-4f59-b648-43c4e9504059" />
+<img width="1220" height="422" alt="ClientsVendes screenshot 4" src="https://github.com/user-attachments/assets/6c0ed483-7d79-4961-95c3-3e8e9e9307d2" />
 
+# ClientsVendes Portfolio Demo
 
+Static portfolio version of the original ClientsVendes project.
 
+## What changed for deployment
 
-ClientsVendes - Client and Sales Manager
-==========================================
+- The app now runs as a plain static site and is ready to deploy on Vercel.
+- `Clients.db` is used only as bundled seed data on first load.
+- All create, update and delete actions happen inside the current browser only.
+- The deployed `.db` file is never modified.
+- Browser changes are persisted locally with IndexedDB, so each visitor gets a private working copy.
+- Users can export their current browser snapshot or reset the demo back to the bundled database.
 
-__ClientsVendes__ is a lightweight and efficient management application designed for small businesses. It allows you to keep thorough control of clients, sales and expenses through an intuitive web interface and a robust local database.
+## Vercel deployment
 
-🚀 Key Features
-----------------------------
+This repository includes a `vercel.json` configuration that:
 
-- __Client Management (CRUD):__ Create, view and delete clients in a centralized way. Store phone number, email, address and a notepad for each client persistently.
-- __Sales and Expense Tracking:__ Detailed record of transactions linked to each client: Product or service + sale price.
-- __Recurring Expenses:__ System to create, save and delete recurring expenses to streamline the workflow.
-- __Data Export:__ Functionality to export all information to Excel format and make database backups.
-- __Clean Interface:__ Minimalist and functional design aimed at the end user.
-- __Multi-language Support:__ Available in English, Catalan (Català) and Spanish (Español) with persistent language selection.
+- forces the project to use the `Other` framework preset
+- skips dependency installation
+- serves the project root as the output directory
 
-🛠️ Tech Stack
-------------------
+Deploy steps:
 
-The application is built with modern web technologies to ensure speed and ease of installation:
+1. Import the repository into Vercel.
+2. Keep the project root as the root directory.
+3. Deploy.
 
-- __Frontend:__ HTML5, CSS3 and JavaScript (Vanilla).
-- __Backend:__ Node.js.
-- __Database:__ SQLite (Local database, no external servers needed).
+No server, database service, or environment variables are required for the portfolio version.
 
-📂 Project Structure
-------------------------
+## Local preview
 
-The directory tree consists of the following key elements:
+Run the site with any static file server, for example:
 
-- __server.js:__ Main Node.js server.
-- __index.html / styles.css / script.js:__ Core of the user interface.
-- __translations.js:__ Internationalization (i18n) translation dictionary.
-- __Clients.db:__ SQLite database file.
-- __/uploads:__ Folder for attachments or documents.
-- __/Base de Dades Mensual:__ Historical records and backups.
+```bash
+python -m http.server 3000
+```
 
-💻 Installation and Usage
--------------------
+Then open `http://localhost:3000`.
 
-__Prerequisites__
+## Project structure
 
-Node.js must be installed on the system.
+- `index.html`, `styles.css`, `script.js`: main portfolio UI
+- `db-browser.js`: in-browser SQLite layer powered by sql.js
+- `Clients.db`: bundled read-only seed database
+- `translations.js`: interface translations
+- `server.js`: legacy local Express backend kept only for reference
 
-### Steps to get started
+## Notes
 
-1.  **Download or clone** the repository to your local machine.
-2.  **Install the dependencies** by running in the terminal:
-    ```bash
-    npm install
-    ```
-3.  **Start the server**:
-    ```bash
-    node server.js
-    ```
-4.  **Access the application**:
-    Open the browser and go to `http://localhost:3000` or use the shortcut `Gestió de Clients (LOCALHOST).url` included in the project root.
-
----
-
-## ⚙️ Additional Configuration
-
-For technical details about installation on specific local environments, see the file:
-📄 `INSTRUCCIONS-NODE-LOCAL.txt`
+- The original Node/Express implementation is still in the repo for archival/reference purposes, but it is not used by the Vercel portfolio deployment.
+- `DATABASE_DOCUMENTATION.md` describes the original schema and server-side API model; the deployed portfolio runtime is browser-only.
