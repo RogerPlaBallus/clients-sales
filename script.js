@@ -828,7 +828,6 @@ function hideDemoBanner() {
     }
 
     demoBanner.classList.add('hidden');
-    localStorage.setItem('demoBannerHidden', '1');
 }
 
 function restoreDemoBannerState() {
@@ -836,9 +835,8 @@ function restoreDemoBannerState() {
         return;
     }
 
-    if (localStorage.getItem('demoBannerHidden') === '1') {
-        demoBanner.classList.add('hidden');
-    }
+    demoBanner.classList.remove('hidden');
+    localStorage.removeItem('demoBannerHidden');
 }
 
 window.refreshDynamicContent = function refreshDynamicContent() {
