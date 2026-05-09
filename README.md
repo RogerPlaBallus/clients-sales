@@ -16,21 +16,7 @@ Static portfolio version of the original ClientsVendes project.
 - Browser changes are persisted locally with IndexedDB, so each visitor gets a private working copy.
 - Users can export their current browser snapshot or reset the demo back to the bundled database.
 
-## Vercel deployment
 
-This repository includes a `vercel.json` configuration that:
-
-- forces the project to use the `Other` framework preset
-- skips dependency installation
-- serves the project root as the output directory
-
-Deploy steps:
-
-1. Import the repository into Vercel.
-2. Keep the project root as the root directory.
-3. Deploy.
-
-No server, database service, or environment variables are required for the portfolio version.
 
 ## Local preview
 
